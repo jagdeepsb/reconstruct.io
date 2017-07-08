@@ -1,5 +1,3324 @@
-<h1>hello world<h1>
-<h1>hello world<h1>
+<!DOCTYPE html>
+<html lang="en-US">
 
-<h1>hello world<h1>
+<head>
+    <title>Reconstuct</title>
 
+
+    <script type="text/javascript" src="MapData.js"></script>
+    <script type="text/javascript" src="MapDataFull.js"></script>
+
+    <script type="text/javascript">
+        var map =[0];
+        var mapFull = [0];
+        var enemies = [];
+        var damageToEnemies = [];
+        var villager = [];
+        var fencedRegion = [0];
+        var fence = [];
+        var fenceHP = [0];
+        var buildings = [];
+        var hospital =[0];
+        var light = [];
+        sizeOfLight = 0;
+        sizeOfHospital = 2;
+        hospital[sizeOfHospital - 1]= 0;
+        hospital.fill(0);
+        fencedRegion.length = 14400;
+        fencedRegion.fill(1);
+        fenceHP.length = 14400;
+        fenceHP.fill(-100000);
+        var allDamage = {damageECount : 0, damageHCount : 0};
+        var MapX = 0;
+        var MapY = 0;
+        var canvasH = 0;
+        var canvasW = 0;
+        var canvas;
+        var left = false;
+        var right = false;
+        var up = false;
+        var down = false;
+        var space = false;//delete later
+        var mouse = false;
+        var drawX = 10;
+        var drawY = 10;
+        var moveSpeed = 8;
+        var fps = 20;
+        var mapDataCount = 0;
+        var heroX = 0;
+        var heroY = 0;
+        var hero= {shootCount : 0, direction: 3, animationCycle : 1, animationCount : 0, mouseAngle : 0, health : 1000, maxHealth : 1000, mode: "shoot", modeCount : 0, modeBad : false, exp : 0, maxExp : 2, lvl : 1, damage : 3};
+        var deathRed = {maxTone : 0, minTone : 0, animationCount : 0, direction : 1};
+        var mouseX = 0;
+        var mouseY = 0;
+        var GEnemies = {loopcount : 0, x: 0, y: 0, enemyCount: 0};
+        var GVillagers = {x : 0, y : 0, villagerCount : 0};
+        var heartbeat;
+        var musicTime = 1;
+        var shooter = false;
+        var shotCount = 0;
+        var ctx; // initialized the variable/object (Dont know how html works) outside since it is used in multiple instances [ ;_;]
+        var startGame = 0;
+        var fenceMaxHP = 2750;
+        var maxFence = 0;
+        var currentFences = 0;
+        var breach = false;
+        var day = {draw : 0.75, time : 120, number: 1, night : true, tone : 0};
+        var bossCount = 0;
+        var resources = 1000;
+        var maxResources = 2500;
+        var mouseInfo = {spot : 0, width : 0, length : 0};
+        var transparency = 0.7;
+        var HQ = {health : 5000, maxHealth : 10000};
+        var log = {x : 0, y : 0, textLength : 0, list : "", listCount : -1, hide : 0, exitCount : 0, last : ""};
+        var text = [];
+        var stuff;
+        var storyCount = 0;
+        var endStory = 0;
+        var titleH = 0;
+        var titlew = 0;
+        var beat = {beatCount : 0, max : 30, oldTime : 0};
+        var maxLivingSpace = 6;
+        var notSpawed = 0;
+        var winner = 0;
+        var message5 = 0;
+        var tutorial = 0;
+        var finalBoss = 0;
+        var names = ["Emma", "Noah" , "Olivia", "Liam" , "Sophia", "Mason" , "Ava", "Jacob" , "Isabella", "William" , "Mia", "Ethan" , "Abigail", "James" , "Emily", "Alexander" , "Charlotte", "Michael" , "Harper", "Benjamin" , "Madison", "Elijah" , "Amelia", "Daniel" , "Elizabeth", "Aiden" , "Sofia", "Logan" , "Evelyn", "Matthew" , "Avery", "Lucas" , "Chloe", "Jackson" , "Ella", "David" , "Grace", "Oliver" , "Victoria", "Jayden" , "Aubrey", "Joseph" , "Scarlett", "Gabriel" , "Zoey", "Samuel" , "Addison", "Carter" , "Lily", "Anthony" , "Lillian", "John" , "Natalie", "Dylan" , "Hannah", "Luke" , "Aria", "Henry" , "Layla", "Andrew" , "Brooklyn", "Isaac" , "Alexa", "Christopher" , "Zoe", "Joshua" , "Penelope", "Wyatt" , "Riley", "Sebastian" , "Leah", "Owen" , "Audrey", "Caleb" , "Savannah", "Nathan" , "Allison", "Ryan" , "Samantha", "Jack" , "Nora", "Hunter" , "Skylar", "Levi" , "Camila", "Christian" , "Anna", "Jaxon" , "Paisley", "Julian" , "Ariana", "Landon" , "Ellie", "Grayson" , "Aaliyah", "Jonathan" , "Claire", "Isaiah" , "Violet", "Charles"];
+        //Names are from: http://nameberry.com/popular_names/US
+        // log.list = log.list + "There is a breach in the walls!>>>>>>(Space)/";
+        class sound
+        {
+            constructor(volume, playbackRate) 
+            {
+                 //this = document.getElementById(id);
+                 this.volume = volume;
+                 this.playbackRate = playbackRate;
+            }
+        }
+        class building
+        {
+            constructor(type, tile, safe, fenced) 
+            {
+                this.type = type;
+                this.tile = tile;
+                this.safe = safe;
+                this.fenced = fenced;
+                
+            }
+        }
+        class enemy 
+        {
+            constructor(x, y, attackCount, currentHealth, maxHealth, damage, xTrend, yTrend, spawnCheck, type) 
+            {
+                this.x = x;
+                this.y = y;
+                this.attackCount = attackCount;
+                this.currentHealth = currentHealth;
+                this.maxHealth = maxHealth;
+                this.damage = damage;
+                this.xTrend = xTrend;
+                this.yTrend = yTrend;
+                this.spawnCheck = spawnCheck;
+                this.type = type;
+            }
+        }
+        class villagers
+        {
+            constructor(x, y, attackCount, currentHealth, maxHealth, damage, directionMove, name, hospital) 
+            {
+                this.x = x;
+                this.y = y;
+                this.attackCount = attackCount;
+                this.currentHealth = currentHealth;
+                this.maxHealth = maxHealth;
+                this.damage = damage;
+                this.directionMove = directionMove;
+                this.name = name;
+                this.hospital = hospital;
+                this.exp = 0;
+                this.maxExp = 2;
+                this.lvl = 1;
+                this.d2 = 4;
+                this.animationCycle = 0;
+                this.animationCount = 0;
+            }
+        }
+        function reset() 
+        {
+            ctx.globalAlpha = transparency;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, canvasW, canvasH);
+            ctx.globalAlpha = transparency;
+        }
+        function death()
+        {
+            window.clearTimeout(stuff);
+            reset();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("youDied");
+            ctx.drawImage(img, canvasW/2 - 200, canvasH/2 - 200);
+            if(hero.health <= 0)
+                {
+                    var img = document.getElementById("heroDeath");
+                    ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+                }
+            else
+                {
+                    var img = document.getElementById("HQDeath");
+                    ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125);   
+                }
+
+        }
+        function win()
+        {
+            window.clearTimeout(stuff);
+            reset();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("youWin");
+            ctx.drawImage(img, canvasW/2 - 200, canvasH/2 - 200);
+            var img = document.getElementById("winText");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125);
+        }
+        function doMessage()
+        {
+            window.clearTimeout(stuff);
+            reset();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("message");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            ctx.font = '10pt Calibri';
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillText("Click twice to continue.", canvasW - 200, canvasH - 20);
+        }
+        function tPause()
+        {
+            window.clearTimeout(stuff);
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t1");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 1;
+        }
+        function t2()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t2");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 4;
+        }
+        function t3()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t3");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 7;
+        }
+        function t4()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t4");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 10;
+        }
+        function t5()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t5");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 13;
+        }
+        function t6()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t6");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 16;
+        }
+        function t7()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(0, 0, canvasW, canvasH);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+            ctx.globalAlpha = 0.5;
+            var img = document.getElementById("t7");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 125); 
+            tutorial = 19;
+        }
+        function drawMap() 
+        {
+
+            sizeAdjust();
+            update();
+            reset();
+            sizeOfLight = 0;
+            for(var x = 0; x < 14400; x++)
+                {
+                    drawX = -MapX + ((x % 120 )) * 32;
+                    drawY = -MapY +((((x - (x % 120)) / 120))) * 32;
+                   
+                    if(drawX > -192 && drawX < 1632 && drawY > -192 && drawY <1000)
+                        {
+
+                            var img = document.getElementById(0);
+                            ctx.drawImage(img, drawX + 0, drawY + 0);
+                            if(fencedRegion[x] == 1)
+                                {
+                                    ctx.globalAlpha = 0.15;
+                                    ctx.beginPath();
+                                    ctx.rect(drawX, drawY, 32, 32); 
+                                    ctx.fillStyle=" #001a66";
+                                    ctx.fill();
+                                    ctx.globalAlpha = transparency;
+                                     if(hero.mode == "build" && space == true)
+                                     {
+                                        ctx.globalAlpha = 0.5;
+                                        ctx.beginPath();
+                                        ctx.rect(drawX + 31.5, drawY, 1, 32); 
+                                        ctx.fillStyle = "black";
+                                        ctx.fill();
+                                        ctx.globalAlpha = 0.5;
+                                        ctx.beginPath();
+                                        ctx.rect(drawX, drawY + 31.5, 32, 1); 
+                                        ctx.fillStyle = "black";
+                                        ctx.fill();
+                                        ctx.globalAlpha = transparency;
+                                     }
+                                }
+                           
+
+                            
+                        }
+                }
+
+            for(var x = 0; x < 14400; x++)
+                {     
+                    drawX = -MapX + ((x % 120)) * 32;
+                    drawY = -MapY +((((x - (x % 120)) / 120))) * 32;
+                    var img = document.getElementById(map[x]); //Initialize the variable "img" outside since it is used multiple times... [ -_-]
+                    if(hero.mode == "build")
+                        ctx.globalAlpha = 0.5;
+                    if(drawX > -192 && drawX < 1632 && drawY > -192 && drawY <1000)
+                        {
+                            switch(map[x])
+                                {
+//                                    case 0: 
+//                                        var img = document.getElementById(map[x]);
+//                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+//                                        break;
+//                                     case "1": 
+//                                        var img = document.getElementById(map[x]);
+//                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+//                                        break;
+                                    case 2: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 96);
+                                        light[sizeOfLight] = {x : drawX, y : drawY};
+                                        sizeOfLight++;
+                                        break;
+                                    case 3: 
+                                        ctx.drawImage(img, drawX - 32, drawY - 128);
+                                        break;
+                                    case 4: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+//                                    case "5": 
+//                                        var img = document.getElementById(map[x]);
+//                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+//                                        break;
+                                    case 6: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 7: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 8: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 9: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 10: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 96);
+                                        break;
+                                    case 11: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 256);
+                                        break;
+                                    case 12: 
+                                        ctx.drawImage(img, drawX + 0, drawY -128 );
+                                        break;
+                                    case 13: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 160);
+                                        break;
+                                    case 14: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 15: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 128);
+                                        drawHQHealth();
+                                        break;
+                                    case 16: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 17: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 18: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 19: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 96);
+                                        break;
+                                    case 20: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 21: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 22: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 23: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 24: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 25: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 26: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 27: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 28: 
+                                        ctx.drawImage(img, drawX + 0, drawY - 96);
+                                        break;
+                                    case 29: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 30: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 31: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 32: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 33: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 34: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 35: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 36: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 37: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 38: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 39: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 40: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 41: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 42: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 43: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 44: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 45: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 46: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 47: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 48: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 49: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 50: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 51: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 52: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 53: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;
+                                    case 54: 
+                                        ctx.drawImage(img, drawX + 0, drawY + 0);
+                                        break;                                          
+                                }
+                            
+//                            if(space == true)
+//                                {
+//                                    //var canvas = document.getElementById('mycanvas');
+//                                    //var context = canvas.getContext('2d');              Same thing as I did down there VVVVVVVVVVV [ ^_^]
+//                                    ctx.font = '10pt Calibri';
+//                                    ctx.fillStyle = "red";
+//                                    ctx.fillText(drawX + MapX, drawX, drawY);
+//                                    ctx.fillText(drawY + MapY, drawX, drawY + 10);
+//                                    ctx.fillText(x, drawX, drawY + 20);
+//                                }
+                            drawEnemies();
+                            drawVillagers();
+                            if (drawX + 32 > canvasW/2 && drawX - 32 < canvasW/2 && drawY + 32 > canvasH/2 && drawY - 32 < canvasH/2)
+                                {
+                                    drawHero();
+                                }
+                            drawFence(x);
+                            drawProjectiles(x);
+                            
+                        }
+                }
+            //var canvas = document.getElementById('mycanvas');
+            //var context = canvas.getContext('2d');              This can be removed since it is essentially just document.getElementById('mycanvas').getContext('2d'); Which is essentially just the variable ctx   ( ._.)
+//            ctx.font = '10pt Calibri';
+//            ctx.fillStyle = "red";
+//            ctx.fillText(mouseInfo.length, 150, 100);
+//            ctx.fillText(mouseInfo.width, 150, 110);
+//            ctx.fillText(mouseInfo.spot, 150, 120);
+//            ctx.fillText(mapFull[ValueAtXY(MapX + mouseX - 16, MapY + mouseY - 16)], 150, 130);
+//            ctx.fillText(MapX, 150, 140);
+//            ctx.fillText(MapY, 150, 150);
+//            ctx.fillText(day.draw, 150, 160);
+//            ctx.fillText(day.number, 150, 170);
+//            ctx.fillText((day.draw + 0.25) % 1, 150, 180);
+//            ctx.fillText(day.night, 150, 190);
+//            ctx.fillText(hero.modeBad, 150, 200);
+//            ctx.fillText(shotCount, 150, 210);
+
+            if(hero.mode == "build")
+                drawSquares();
+            drawStats();
+            drawLight();
+            if(winner == 1)
+                win();
+            if(hero.health <= 0 || HQ.health <= 0)
+                {
+                    death();
+                }
+            if(message5 == 1)
+                {
+                    doMessage();
+                }
+            if(tutorial == 0)
+                 tPause();
+            if(tutorial == 3)
+                t2();
+            if(tutorial == 6)
+                t3();
+            if(tutorial == 9)
+                t4();
+            if(tutorial == 12)
+                t5();
+            if(tutorial == 15)
+                t6();
+            if(tutorial == 18)
+                t7();
+            playShot3();
+            
+        }
+        function drawProjectiles(x)
+        {
+            var xPos = (x % 120);
+            var yPos = (x - xPos) / 120;
+            xPos = xPos * 32;
+            yPos = yPos * 32;
+            var pX = 0;
+            var pY = 0;
+            var id = "";
+            for (z = 0; z < damageToEnemies.length; z++)
+                {
+                    pX = damageToEnemies[z].x1;
+                    pY = damageToEnemies[z].y1;
+                   if(xPos-32<pX&&xPos+32>pX&&yPos-32<pY&&yPos+32>pY)
+                        {
+						      switch(damageToEnemies[z].direction)
+                                  {
+                                       case "up":
+                                            id = "U" + damageToEnemies[z].animation;
+                                            break;
+                                        case "down":
+                                            id = "D" + damageToEnemies[z].animation;
+                                            break;
+                                        case "left":
+                                            id = "L" + damageToEnemies[z].animation;
+                                            break;
+                                        case "right":
+                                            id = "R" + damageToEnemies[z].animation;
+                                            break;   
+                                  }
+                            //alert(id);
+                            if(id == "R1"||id == "R2"||id == "L1"||id == "L2"||id == "U1"||id == "U2"||id == "D1"||id == "D2")
+                                {
+                            var img = document.getElementById(id);
+                            ctx.drawImage(img, pX - MapX, pY - MapY);
+                                }
+
+                        }
+                }
+            
+        }
+        function drawSquares()
+        {
+
+            var xPos = 0;
+            var yPos = 0;
+            var health = 0;
+            var redToGreen = 0;
+            for(var x = 0; x< 14400; x++)
+                {
+                    xPos = -MapX + ((x % 120 )) * 32;
+                    yPos = -MapY +((((x - (x % 120)) / 120))) * 32;
+                    if(fence[x] >= 3)
+                        {
+                            health = fenceHP[x];
+                            if(health < 0)
+                                health = 0;
+                            redToGreen = 41 - Math.round((health/fenceMaxHP) * 41);
+                            if(fence[x] == 3 || fence[x] == 103)
+                                yPos = yPos + 32;
+                            if(fence[x] == 4 || fence[x] == 104)
+                                yPos = yPos - 32;
+                            if(fence[x] == 5 || fence[x] == 105)
+                                xPos = xPos - 32;
+                            if(fence[x] == 6 ||fence[x] == 106)
+                                xPos = xPos + 32;
+                            
+                            ctx.globalAlpha = 1;
+                            ctx.beginPath();
+                            ctx.rect(xPos + 12, yPos + 12, 8, 8); 
+                            ctx.fillStyle = colorHP(redToGreen); 
+                            ctx.fill();
+                            ctx.globalAlpha = transparency;
+
+                        }
+                }
+        }
+        function drawFence(x)
+        {
+            
+            switch(fence[x])
+                {
+                    case 3: 
+                        var img = document.getElementById("HFence");  
+                        ctx.drawImage(img, drawX + 0, drawY - 32);
+                        break;
+                    case 4: 
+                        var img = document.getElementById("HFence");  
+                        ctx.drawImage(img, drawX + 0, drawY - 64);
+                        break;
+                    case 5: 
+                        var img = document.getElementById("VFence");  
+                        ctx.drawImage(img, drawX - 4, drawY - 32);
+                        break;
+                    case 6: 
+                        var img = document.getElementById("VFence");  
+                        ctx.drawImage(img, drawX + 28, drawY - 32);
+                        break;
+                }
+            var xMouse = mouseX - 16;
+            var yMouse = mouseY - 16;
+            var xPos = drawX;
+            var yPos = drawY;
+            if(fence[x] == 3 || fence[x] == 103)
+                yPos = yPos + 32;
+            if(fence[x] == 4 || fence[x] == 104)
+                yPos = yPos - 32;
+            if(fence[x] == 5 || fence[x] == 105)
+                xPos = xPos - 32;
+            if(fence[x] == 6 ||fence[x] == 106)
+                xPos = xPos + 32;
+
+            if(fence[x] >= 3)
+                {
+                    if(xMouse-16<xPos && xMouse+16>xPos && yMouse-16<yPos && yMouse+16>yPos)
+                        {
+                            yPos = yPos;
+                            if(fence[x] == 3 || fence[x] == 103)
+                                yPos = yPos - 64;
+                            if(fence[x] == 4 || fence[x] == 104)
+                                yPos = yPos - 32; 
+                            if(fence[x] == 5 || fence[x] == 105)
+                                xPos = xPos + 16;
+                            if(fence[x] == 6 || fence[x] == 106)
+                                xPos = xPos - 16;
+                            var barLength = (fenceHP[x]/fenceMaxHP) * 28;
+                            //box
+                            ctx.beginPath();
+                            ctx.rect(xPos, yPos - 12, 32, 2);
+                            ctx.fillStyle = "#00FF00";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos + (30 - barLength), yPos - 10, barLength, 3);
+                            ctx.fillStyle = "#00FF00";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos, yPos - 7, 32, 2);
+                            ctx.fillStyle = "#00FF00";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos, yPos - 12, 2, 7);
+                            ctx.fillStyle = "#00FF00";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos + 30, yPos - 12, 2, 7);
+                            ctx.fillStyle = "#00FF00";
+                            ctx.fill();
+//                            ctx.font = '10pt Calibri';
+//                            ctx.fillStyle = "red";
+//                            ctx.fillText(fence[x], xPos, yPos);
+                            
+                            if(mouse == true && hero.mode == "build")
+                                {
+                                        var amount = fenceMaxHP - fenceHP[x];
+                                        amount = Math.floor(amount/20);
+                                        if(resources >= amount && amount > 0 && fence[x] >= 3)
+                                            {
+                                                var button = new sound (0.7, 1);
+                                                button = document.getElementById("button");
+                                                button.play();
+                                                resources = resources - amount;
+                                                fenceHP[x] = fenceMaxHP;
+                                                if(fence[x] > 100)
+                                                    {
+                                                        fence[x] = fence[x] - 100;
+                                                        currentFences = currentFences + 1;
+                                                        if(currentFences == maxFence)
+                                                            breach = false;
+                                                        
+                                                    }
+                                                //mouse == false;
+                                            }
+                                
+                                }
+
+                        }
+                }
+        }
+        function drawHero()
+        {
+            animation = ((hero.direction - 1) * 4) + hero.animationCycle + 1;
+            var id = "Hero" + animation;
+            var img = document.getElementById(id);
+            ctx.drawImage(img, canvasW/2 - 8, canvasH/2 - 24);    
+            
+        }
+        function drawHeroHealthBar()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.rect(canvasW - 528, 16, 512 , 147);
+            ctx.fillStyle = "black";
+            ctx.fill();
+            ctx.globalAlpha = transparency;
+            ctx.globalAlpha = 1;
+            var img = document.getElementById("info");
+            ctx.drawImage(img, canvasW - 512, 32, 480, 115.2);
+            var length = 278.4;
+            var barLength = (hero.health/hero.maxHealth) * length;
+            redToGreen = 41 - Math.round((barLength/length) * 41);
+            var color2 = colorHP(redToGreen);
+            
+            ctx.beginPath();
+            ctx.rect((canvasW - 425) + (length - barLength), 47.3, barLength, 11.6);
+            ctx.fillStyle = color2;
+            ctx.fill();
+            var percent = Math.round((hero.health/hero.maxHealth) * 100);
+            ctx.font = '13pt Calibri';
+            ctx.fillStyle = color2;
+            ctx.fillText(percent + '%',(canvasW - 135), 47.3 + 10);
+            
+            length = 268.4;
+            barLength = (hero.exp/hero.maxExp) * length;
+            ctx.beginPath();
+            ctx.rect((canvasW - 414.8) + (length - barLength), 63.2, barLength, 11.7);
+            ctx.fillStyle = "#00e6e6";
+            ctx.fill();
+            ctx.font = '13pt Calibri';
+            ctx.fillStyle = "#00e6e6"
+            ctx.fillText(hero.lvl,(canvasW - 135), 63.2 + 10);
+            
+            length = 251.4;
+            barLength = (resources/maxResources) * length;
+            ctx.beginPath();
+            ctx.rect((canvasW - 404.6 + 7) + (length - barLength), 80.6, barLength, 12.0);
+            ctx.fillStyle = "#ff5c33";
+            ctx.fill();
+            ctx.font = '13pt Calibri';
+            ctx.fillStyle = "#ff5c33";
+            ctx.fillText(resources + " / " + maxResources,(canvasW - 135), 80.6 + 10);
+            ctx.globalAlpha = transparency;
+            ctx.font = '16pt Calibri';
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillText("Day: " + day.number,(canvasW - 214), 80.6 + 42);
+            ctx.globalAlpha = transparency;
+
+            
+        }
+        function colorHP(color)
+        {
+            var color2 = 0;
+            if(color<0)
+                color = 0;
+            if(color>40)
+                color =  40;
+            switch(color)
+                {
+                    case 0:
+                        color2 = "#00FF00";
+                        break;
+                    case 1:
+                        color2 = "#0DFF00";
+                        break;
+                    case 2:
+                        color2 = "#1AFF00";
+                        break;
+                    case 3:
+                        color2 = "#26FF00";
+                        break;
+                    case 4:
+                        color2 = "#33FF00";
+                        break;
+                    case 5:
+                        color2 = "#40FF00";
+                        break;
+                    case 6:
+                        color2 = "#4CFF00";
+                        break;
+                    case 7:
+                        color2 = "#59FF00";
+                        break;
+                    case 8:
+                        color2 = "#66FF00";
+                        break;
+                    case 9:
+                        color2 = "#73FF00";
+                        break;
+                    case 10:
+                        color2 = "#80FF00";
+                        break;
+                    case 11:
+                        color2 = "#8CFF00";
+                        break;
+                    case 12:
+                        color2 = "#99FF00";
+                        break;
+                    case 13:
+                        color2 = "#A6FF00";
+                        break;
+                    case 14:
+                        color2 = "#B2FF00";
+                        break;
+                    case 15:
+                        color2 = "#BFFF00";
+                        break;
+                    case 16:
+                        color2 = "#CCFF00";
+                        break;
+                    case 17:
+                        color2 = "#D9FF00";
+                        break;
+                    case 18:
+                        color2 = "#E6FF00";
+                        break;
+                    case 19:
+                        color2 = "#F2FF00";
+                        break;
+                    case 20:
+                        color2 = "#FFFF00";
+                        break;
+                    case 21:
+                        color2 = "#FFF200";
+                        break;
+                    case 22:
+                        color2 = "#FFE600";
+                        break;
+                    case 23:
+                        color2 = "#FFD900";
+                        break;
+                    case 24:
+                        color2 = "#FFCC00";
+                        break;
+                    case 25:
+                        color2 = "#FFBF00";
+                        break;
+                    case 26:
+                        color2 = "#FFB200";
+                        break;
+                    case 27:
+                        color2 = "#FFA600";
+                        break;
+                    case 28:
+                        color2 = "#FF9900";
+                        break;
+                    case 29:
+                        color2 = "#FF8C00";
+                        break;
+                    case 30:
+                        color2 = "#FF8000";
+                        break;
+                    case 31:
+                        color2 = "#FF7300";
+                        break;
+                    case 32:
+                        color2 = "#FF6600";
+                        break;
+                    case 33:
+                        color2 = "#FF5900";
+                        break;
+                    case 34:
+                        color2 = "#FF4D00";
+                        break;
+                    case 35:
+                        color2 = "#FF4000";
+                        break;
+                    case 36:
+                        color2 = "#FF3300";
+                        break;
+                    case 37:
+                        color2 = "#FF2600";
+                        break;
+                    case 38:
+                        color2 = "#FF1900";
+                        break;
+                    case 39:
+                        color2 = "#FF0D00";
+                        break;
+                    case 40:
+                        color2 = "#FF0000";
+                        break;
+                }
+            return color2;  
+        }
+        function heroAnimation()
+        {
+            if(hero.animationCount == 4)
+                    {
+                        hero.animationCycle++;
+                        hero.animationCycle = hero.animationCycle % 4;
+                        hero.animationCount = 0;
+                    }
+            hero.animationCount++;
+        }
+        function drawLight()
+        {
+            for(var x = 0; x<sizeOfLight; x++)
+                {
+                    if(day.night == true)
+                    {
+                        ctx.globalAlpha = 0.25;
+                        var img = document.getElementById("Lighting");
+                        ctx.drawImage(img, light[x].x - 64, light[x].y  - 160);
+                    }
+                }
+            ctx.globalAlpha = transparency;
+        }
+        function drawStats()
+        {  
+            hero.health = hero.health + 0.1;
+            if(hero.health > hero.maxHealth)
+                {
+                    hero.health = hero.maxHealth;
+                }
+            drawMaxLivingSpace();
+            drawDay();
+            //drawTopBar();
+            drawHeroHealthBar();
+            drawResources();
+            drawMode();
+            drawLog();
+            drawDeathRed();
+            
+            
+        }
+        function drawLog()
+        {
+            var length = canvasW/2;
+            var height = 128;
+            var bottomMargin = 20;
+            ctx.globalAlpha = (log.hide * 3/10);
+            img = document.getElementById("log");
+            ctx.drawImage(img, canvasW/2 - 352, canvasH - height - bottomMargin);
+            ctx.globalAlpha = transparency;
+            
+            var textMargin = 30;
+            if(log.x == 0)
+                log.x = canvasW/2 - 352 + textMargin;
+            if(log.y == 0)
+                log.y = canvasH - height - bottomMargin + textMargin;
+            
+            if(log.listCount == -1)
+                {
+                    for(var x = 0; x < 5; x++)
+                        {
+                            text[x] = ""
+                        }
+                }
+            var char;
+            function speed()
+            {
+            if(log.listCount < log.list.length - 1)
+                {
+                    log.listCount++;
+                    char = log.list.charAt(log.listCount);
+                    if(char == ">")
+                            log.textLength++;
+                    else if (char == "/")
+                         log.listCount = log.listCount - 1;
+                    else
+                        text[log.textLength] = text[log.textLength] + char;
+                   
+                    if(char == "/")
+                        {
+                            if(space == true || log.exitCount >= 90)
+                                {
+                                    var button = new sound (0.7, 1);
+                                    button = document.getElementById("button");
+                                    button.play();
+                                    for(var x = 0; x < 5; x++)
+                                    {
+                                        text[x] = ""
+                                    }
+                                    log.textLength = 0;
+                                    log.listCount++;
+                                    log.exitCount = 0;
+                                    
+                                }
+                        }
+                    
+                }
+                }
+                
+            speed();
+            speed();
+            speed();
+            log.exitCount++;
+            if(text[0] == "")
+                log.exitCount = 0;
+            
+            
+            
+            
+
+            ctx.globalAlpha = log.hide * transparency;
+            ctx.font = '16pt "Courier New", Courier, monospace';
+            ctx.fillStyle = "#FFFFFF";
+            for(var x = 0; x < 5; x++)
+                {
+                    ctx.fillText(text[x], log.x, log.y + x*28);
+                }
+            ctx.globalAlpha = transparency;
+            log.x = 0;
+            if(text[0] == "")
+                    log.hide = log.hide - 0.02;
+            else
+                    log.hide = log.hide + 0.02;
+            if(log.hide > 1)
+                log.hide = 1;
+            if(log.hide < 0)
+                log.hide = 0;
+            
+        }
+        function drawMode()
+        {
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle="#000000"; 
+            ctx.fillRect(16, 16, 96, 96 * 3); 
+            ctx.globalAlpha = transparency;
+            x = 32;
+            y = 32;
+            ctx.globalAlpha = 1;
+            var img = document.getElementById("pause");
+            ctx.drawImage(img, x, y);
+            var img = document.getElementById("green");
+            if(hero.mode == "shoot")
+                ctx.drawImage(img, x - 1, y + 96 - 1);
+            else
+                ctx.drawImage(img, x, y + (2*96));
+            var img = document.getElementById("sword");
+            ctx.drawImage(img, x, y + 96);
+            var img = document.getElementById("hammer");
+            ctx.drawImage(img, x + 1, y + (2*96) + 1);
+            ctx.globalAlpha = transparency;
+            
+            if(hero.mode == "build")
+                {
+                    ctx.font = '10pt Calibri';
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillText("Hold space for grid.",x - 16, y + 96*2 + 80);
+                }
+            
+            var xMouse = mouseX - 16;
+            var yMouse = mouseY - 16;
+            var xPos = 64;
+            var yPos = 224;
+            if(mouse == true && hero.modeCount > 5)
+                {
+                    if(xMouse>xPos-32 && xMouse<xPos + 32 && yMouse<yPos + 96 && yMouse>yPos - 96)
+                        {
+                            if(hero.mode == "shoot")
+                                {
+                                    hero.mode = "build";
+                                    var button = new sound (0.7, 1);
+                                    button = document.getElementById("button");
+                                    button.play();
+                                }
+                            else
+                                {
+                                    hero.mode = "shoot";
+                                    var button = new sound (0.7, 1);
+                                    button = document.getElementById("button");
+                                    button.play();
+                                }
+                        }
+                    hero.modeCount = 0;
+                }
+            hero.modeCount++;
+            
+        }
+        function drawDay()
+        {
+            ctx.globalAlpha = day.tone;
+            ctx.fillStyle="black"; 
+            ctx.fillRect(0, 0, canvasW, canvasH); 
+            ctx.globalAlpha = transparency;
+            var dayDraw = (day.draw + 0.25) % 1;
+            if(dayDraw < 0.03)
+                {   
+                    if(day.number != 1 && day.number != 11)
+                        {
+                            ctx.globalAlpha = 0.5;
+                            ctx.font = '100pt Calibri';
+                            ctx.fillStyle = "red";
+                            ctx.fillText('Day' + day.number, canvasW/2 - 100 , canvasH/2 + ((dayDraw * 5000) - 50));
+                            ctx.globalAlpha = transparency;
+                        }
+                }
+        }
+        function drawDeathRed()
+        {
+            var tone = 0;
+            if((hero.health/hero.maxHealth))
+                tone = 0.005 / ((hero.health/hero.maxHealth) * (hero.health/hero.maxHealth))
+            else
+                tone = 0.25;
+            if(tone > 0.25)
+                tone = 0.25;
+            
+            deathRed.maxTone = tone;
+            deathRed.minTone = tone - 0.05;
+            if(tone<0.04)
+                {
+                    deathRed.maxTone = 0;
+                    deathRed.minTone = 0;
+                }
+            if(deathRed.minTone < 0)
+                deathRed.minTone = 0;
+            
+            
+            deathRed.animationCount = deathRed.animationCount + deathRed.direction/200;
+            if(deathRed.animationCount > deathRed.maxTone)
+                {
+                    deathRed.direction = deathRed.direction * -1;
+                    deathRed.animationCount = deathRed.maxTone;
+                }
+            if(deathRed.animationCount < deathRed.minTone)
+                {
+                    deathRed.direction = deathRed.direction * -1;
+                    deathRed.animationCount = deathRed.minTone;
+                }
+            ctx.globalAlpha = deathRed.animationCount;
+            ctx.fillStyle="red"; 
+            ctx.fillRect(0, 0, canvasW, canvasH); 
+            ctx.globalAlpha = transparency;
+        }
+        function drawTopBar()
+        {
+            //var ctx = document.getElementById("mycanvas").getContext("2d");
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle="black"; 
+            ctx.fillRect(0, 0, canvasW, 56); 
+            ctx.globalAlpha = transparency;
+        }
+        function drawResources()
+        {
+            if(resources>maxResources)
+                resources = maxResources;
+//            ctx.font = '20pt Calibri';
+//            ctx.fillStyle = "red";
+//            ctx.fillText("Resources:" + resources, canvasW/8, 35);
+        }
+        function drawMaxLivingSpace()
+        {
+            
+        }
+        function update()
+        {
+            //Sound
+            playHeartbeat();
+            //Shoot
+            heroShoot();
+            villagerShoot();
+             
+            //Monitor Stuff
+            modeCheck();
+            monitorFenceHealth();
+            setMouseInfo();
+            addToFence();
+            updateDay();
+            updateProjectiles();
+            monitorHeroHealth();
+            updateHeroDirection();
+            monitorVillagerHealth();
+            monitorHospital();
+            generateEnemies();
+            monitorEnemyHealth();
+            monitorHQHealth();
+            heroExp();
+            villagerExp();
+
+           
+            //Move
+            updateHeroMovement();
+            villagerMove();
+            moveEnemies();   
+           // mouse = false;
+        }
+        function randomVillager()
+        {
+            var value = Math.floor((Math.random() * villager.length) + 1);
+            value = value % villager.length;
+            while(villager[value] == 0 || villager[value].name === undefined)
+                {
+                    value++;
+                    value = value % villager.length;
+                }
+            return  villager[value].name;
+        }
+        function heroExp()
+        {
+            var amount = 0;
+            if(hero.exp >= hero.maxExp)
+                {
+                    amount = hero.exp - hero.maxExp;
+                    hero.maxExp = hero.maxExp * 2;
+                    hero.exp = amount;
+                    hero.lvl = hero.lvl + 1;
+                    hero.damage = Math.round(hero.damage * 1.6);
+                    log.list = log.list + "You: I'm level " + hero.lvl + "!>>>(Space)/";
+                }
+        }
+        function villagerExp()
+        {
+            for(x = 0; x < villager.length; x++)
+                {
+                    if(villager[x].exp >= villager[x].maxExp)
+                        {
+                            var amount = villager[x].exp - villager[x].maxExp;
+                            villager[x].maxExp = villager[x].maxExp * 2;
+                            villager[x].exp = amount;
+                            villager[x].lvl = villager[x].lvl + 1;
+                            villager[x].damage = Math.round(villager[x].damage * 1.6);
+                            villager[x].health = Math.round(villager[x].health * 1.4);
+                            log.last = "";
+                            log.list = log.list + villager[x].name + ": I'm level " + villager[x].lvl + "!>" + getMessage(villager[x].name) + ">(Space)/";
+                        }
+                }
+        }
+        function getMessage(name)
+        {
+            var m1 = "";
+            var m2 = "";
+            if(name == "Deven"||name == "Ashley"||name == "James"||name == "Grace")
+                {
+                    if(name == "Deven")
+                        {
+                            m1 = "Deven: *Fixes hair and flexes*"
+                            m2 = "Grace: *Rolls her eyes*"
+                        }
+                    if(name == "Grace")
+                        {
+                            m1 = "Grace: But first... lemme take a selfie!"
+                        }
+                    if(name == "Ashley")
+                        {
+                            m1 = "Ashley: OMG!"
+                        }
+                    if(name == "James")
+                        {
+                            m1 = "James: This is gonna be HUUUUUGE!"
+                        }
+                }
+            else
+                {
+                    var x = Math.floor((Math.random() * 11) + 1);
+                    switch(x)
+                        {
+                            case 1:
+                                m1 = name + ": Yay!"
+                                break;
+                            case 2:
+                                m1 = name + ": Let's bash some baddies!"
+                                break;
+                            case 3:
+                                m1 = name + ": Eat dust mutants!"
+                                break;
+                            case 4:
+                                m1 = name + ": FEEL THE POWER!"
+                                break;
+                            case 5:
+                                m1 = name + ": Let them eat cake!"
+                                break;
+                            case 6:
+                                m1 = name + ": Alright!"
+                                break;
+                            case 7:
+                                m1 = name + ": Noobs beware!"
+                                break;
+                            case 8:
+                                m1 = name + ": Lets GOOOOOOOOOOO!"
+                                break;
+                            case 9:
+                                m1 = name + ": I'm hungry."
+                                break;
+                            case 10:
+                                m1 = name + ": I AM SOOOO TRIGGERED RIGHT NOW!"
+                                break;
+                            case 11:
+                                m1 = name + ": Yay. (sarcasm)"
+                                break;
+                        }
+                }
+            
+            var message = m1 + ">" + m2;
+            return message;
+        }
+        function playHeartbeat()
+        {
+            var d = new Date();
+            var h = d.getHours() * 3600000;
+            var m = d.getMinutes() * 60000;
+            var s = d.getSeconds() * 1000;
+            var ms = d.getMilliseconds();
+            currentTime = h + m + s + ms;
+            beat.max = + (hero.health/hero.maxHealth) * 700 + 250 + beat.oldTime;
+            
+            if(currentTime > beat.max)
+                {
+                    
+                    heartbeat = document.getElementById("heartbeat");
+                    heartbeat.volume = 1 - ((hero.health/hero.maxHealth) * 0.4);
+                    heartbeat.playbackRate = 1;
+                    heartbeat.play();
+                    //beat.beatCount = 0;
+                    beat.oldTime = currentTime;
+                }
+           // beat.beatCount++;
+        }
+        function modeCheck()
+        {
+            var xMouse = mouseX - 16;
+            var yMouse = mouseY - 16;
+            var xPos = 64;
+            var yPos = 144;
+  
+            if(xMouse>xPos-32 && xMouse<xPos + 32 && yMouse<yPos + 144 && yMouse>yPos - 144)
+                {
+                   hero.modeBad = true;     
+                }
+            else
+                {
+                    hero.modeBad = false;
+                }
+        }
+        function monitorHQHealth()
+        {
+            var x = 0;
+            var y = 0;
+            var check = 0;
+            function checkHit(x,y)
+            {
+                var check = mapFull[ValueAtXY(x,y)];
+                if(mapFull[ValueAtXY(x,y)] == 15)
+                    return true;
+                else
+                    return false;
+            }
+            for(var z = 0; z < enemies.length; z++)
+                {
+                    
+                    x = enemies[z].x;
+                    y = enemies[z].y;
+                    check = checkHit(x - 32, y);
+                    if(check == true)
+                        {
+                            HQ.health = HQ.health - enemies[z].damage;
+                            continue;
+                        }
+                    check = checkHit(x + 32, y);
+                    if(check == true)
+                        {
+                            HQ.health = HQ.health - enemies[z].damage;
+                            continue;
+                        }
+                    check = checkHit(x, y -  32);
+                    if(check == true)
+                        {
+                            HQ.health = HQ.health - enemies[z].damage;
+                            continue;
+                        }
+                    check = checkHit(x, y  + 32);
+                    if(check == true)
+                        {
+                            HQ.health = HQ.health - enemies[z].damage;
+                            continue;
+                        }
+                }
+            //heal
+            var Xmouse = MapX + mouseX - 16;
+            var Ymouse = MapY + mouseY - 16;
+            var value = mapFull[ValueAtXY(Xmouse, Ymouse)];
+            if(value == 15 && mouse == true && hero.mode == "build")
+                {
+                    var amount = HQ.maxHealth - HQ.health;
+                    if(amount > 500)
+                        amount = 500;
+                    if(resources >= amount && amount!= 0)
+                        {
+                            resources = resources - Math.round(amount/2);
+                            HQ.health = HQ.health + amount;
+                            if(log.last != "You: We healed the HQ!>>>(Space)/")
+                                {
+                                    log.list = log.list + "You: We healed the HQ!>>>(Space)/";
+                                    log.last = "You: We healed the HQ!>>>(Space)/";
+                                }
+                        }
+                    else
+                        {
+                            if(resources<amount)
+                                {
+                                    if(log.last != "You: We don't have enough resources!>>>(Space)/")
+                                        {
+                                            log.list = log.list + "You: We don't have enough resources!>>>(Space)/"; 
+                                            log.last = "You: We don't have enough resources!>>>(Space)/";
+                                        }
+                                }
+                        }
+                }
+                
+            
+            
+        }
+        function drawHQHealth()
+        {
+            var thickness = 5;
+            var length = 175;
+            var height = 15;
+            var x = drawX + 170;
+            var y = drawY + 5;
+            var barLength = (HQ.health/HQ.maxHealth) * length;
+            var redToGreen = 41 - Math.round((barLength/length) * 41);
+            var color1 =  colorHP(redToGreen);
+            var color2 = "#000000"
+            ctx.beginPath();
+            ctx.rect(x, y , (length + 2 * thickness), thickness);
+            ctx.fillStyle = color2;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.rect(x, y , thickness, thickness * 2 + height);
+            ctx.fillStyle = color2;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.rect(x, y + thickness + height, (length + 2 * thickness), thickness);
+            ctx.fillStyle = color2;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.rect(x + length + thickness, y,  thickness, thickness * 2 + height);
+            ctx.fillStyle = color2;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.rect(x + thickness + length - barLength, y + thickness , barLength , height);
+            ctx.fillStyle = color1;
+            ctx.fill();
+            var percent = Math.round((HQ.health/HQ.maxHealth) * 100)
+            ctx.font = '12pt Calibri';
+            ctx.fillStyle = color1;
+            ctx.fillText(percent + '%',x + 2, y + (height + 2 * thickness + 16));
+        }
+        function addToFence()
+        {
+            
+            var cost = 10 * 2 * (mouseInfo.length + mouseInfo.width);
+            var spawn = Math.floor(mouseInfo.length * mouseInfo.width / 20);
+            if(mouse == true && hero.mode == "build" && resources >= cost && fencedRegion[mouseInfo.spot] != 0 && hero.modeBad == false)
+                {
+                    var check = checkAddToFence();
+                    if(check == true)
+                        {
+                            var button = new sound (0.7, 1);
+                            button = document.getElementById("button");
+                            button.play();
+                            resources = resources - cost;
+                            for(x = 0; x < mouseInfo.length; x++)
+                            {
+                                  for(y = 0; y < mouseInfo.width; y++)
+                                  {
+                                        fencedRegion[mouseInfo.spot + x + (y * 120)] = 0;
+                                  }
+                            }
+                            notSpawed = 0;
+                            for(var x = 0; x < spawn; x++)
+                            {
+                                spawnVillager();
+                            }
+                            var display = spawn - notSpawed;
+                            var display2 = "";
+                            var display3 = "";
+                            if(notSpawed > 0)
+                                {
+                                    display2 = "We should capture some houses or apartments";
+                                    display3 = "so that more people can live here.";
+                                }
+                            log.list = log.list + "You: We captured a " + whatLand(mapFull[mouseInfo.spot]) + "!>You: We found " + display + " villagers.>" + display2 +">" + display3 + "(Space)/";
+                            log.last = "";
+                            updateFence();
+                        }
+                }
+        }
+        function checkAddToFence()
+        {
+            var tile = 0;
+            var aTile = 0;
+            var check = false;
+            for(x = 0; x < mouseInfo.length; x++)
+            {
+                for(y = 0; y < mouseInfo.width; y++)
+                {
+                    tile = mouseInfo.spot + 120 * y + x;
+                    aTile = tile - 120;
+                    if(aTile >= 0 && aTile < 14400 && fencedRegion[aTile] == 0)
+                        check = true;
+                    aTile = tile - 1;
+                    if(aTile >= 0 && aTile < 14400 && fencedRegion[aTile] == 0)
+                        check = true;
+                    aTile = tile + 1;
+                    if(aTile >= 0 && aTile < 14400 && fencedRegion[aTile] == 0)
+                        check = true;
+                    aTile = tile + 120;
+                    if(aTile >= 0 && aTile < 14400 && fencedRegion[aTile] == 0)
+                        check = true;
+                }
+             }   
+            return check;
+        }
+        function updateDay()
+        {
+            day.draw = day.draw + 1/(45 * 40);
+            var tone = 0;
+            tone = day.draw - Math.floor(day.draw);
+            tone = Math.abs(tone - 0.5);
+            tone = tone * 1.8;
+            tone = (0.5 * 1.8) - tone ;
+            day.tone = tone;
+            var dayDraw = (day.draw + 0.25) % 1;
+            day.number = Math.floor(day.draw + 0.25);
+//            if(dayDraw < 0.03)
+//                {
+//                    ctx.globalAlpha = 1;
+//                    ctx.font = '100pt Calibri';
+//                    ctx.fillStyle = "red";
+//                    ctx.fillText('Day' + day.number, canvasW/2 - 100 , canvasH/2 + ((dayDraw * 5000) - 50));
+//                    ctx.globalAlpha = transparency;
+//                }
+           if(dayDraw >= 0 && dayDraw <= 0.5)
+               {
+                   if(day.night == true)
+                       {
+                           log.last = ""; 
+                           if(day.number < 5)
+                                log.list = log.list + "You: Day " + day.number + " has started.>Ashley: The satellite dish hasn't received anything.>>(Space)/";
+                           if(day.number == 5)
+                                log.list = log.list + "You: Day " + day.number + " has started.>Ashley: The satellite dish got something!>Ashley: It's all jumbled up though...>(Space)/";
+                           if(day.number == 6)
+                               {
+                                    log.list = log.list + "You: Day " + day.number + " has started.>Ashley: I unscrambled the message!>>(Space)/";
+                                   message5++;
+                               }
+                           if(day.number > 6 && day.number < 10)
+                                log.list = log.list + "You: Day " + day.number + " has started.>You: We're almost there!>>(Space)/";
+                            if(day.number == 10)
+                                log.list = log.list + "You: Day " + day.number + " has started.>You: Watch out for the final boss!>>(Space)/";
+                       }
+                   day.night = false;
+               }
+            else
+                {
+                    if(day.night == false && day.number != 10)
+                        {
+                            log.last = "";
+                            log.list = log.list + "You: Night has fallen!>>>(Space)/";
+                        }
+                    day.night = true;
+                }
+            if(day.number > 10)
+                winner = 1;
+
+
+        }
+        function whatLand(x)
+        {
+            var info = "";
+            switch(x)
+                {
+                    case 0:
+                        info = "Grass Tile";
+                        break;
+                    case 2:
+                        info = "Lamppost";
+                        break;
+                    case 3:
+                        info = "Tree";
+                        break;
+                    case 10:
+                        info = "House. You gained 1 living space!";
+                        maxLivingSpace= maxLivingSpace + 1;
+                        break;
+                    case 11:
+                        info = "Apartment. You gained 3 living space!";
+                        maxLivingSpace = maxLivingSpace + 3;
+                        break;
+                    case 12:
+                        info = "Warehouse. You gained 500 resource space";
+                        maxResources = maxResources + 500;
+                        break;
+                    case 13:
+                        info = "Greenhouse";
+                        break;
+                    case 19:
+                        info = "Hospital. You gained 2 healing space.";
+                        sizeOfHospital = sizeOfHospital + 2;
+                        hospital[sizeOfHospital-1] = 0;
+                        hospital[sizeOfHospital-2] = 0;
+                        break;
+                    case 28:
+                        info = "Convenience Store. You gained 1000 resources!";
+                        resources = resources + 1000;
+                        break;
+                    case 50:
+                        info = "Road";
+                        break;
+                    case 51:
+                        info = "Road";
+                        break;
+                    case 52:
+                        info = "Road";
+                        break;
+                    case 53:
+                        info = "Road";
+                        break;
+                    case 54:
+                        info = "Road";
+                        break;
+
+                }
+            return info;
+        }
+        function monitorHospital()
+        {
+
+            for(var x = 0; x < sizeOfHospital; x++)
+                {
+                    if(hospital[x] == 0)
+                        continue;
+                    hospital[x].timeLeft = hospital[x].timeLeft + 1;
+                    if(hospital[x].timeLeft >= hospital[x].maxHealth)
+                        {              
+                            villager[hospital[x].name].x = 2650;
+                            villager[hospital[x].name].y = 2300;
+                            villager[hospital[x].name].hospital = false;
+                            villager[hospital[x].name].currentHealth =  villager[hospital[x].name].maxHealth;
+                            log.last = "";
+                            log.list = log.list + villager[hospital[x].name].name + ": My injuries are all healed!>Time to blow up some more mutants!>>(Space)/";
+                            hospital[x] = 0;
+                           
+                        }
+                }
+        }
+        function monitorHeroHealth()
+        {
+            var xPos = 0;
+            var yPos = 0;
+            var xHero = MapX + canvasW/2;
+            var yHero = MapY + canvasH/2;
+            for(var x = 0; x < enemies.length; x++)
+                {
+                    xPos = enemies[x].x;
+                    yPos = enemies[x].y;
+                    if(xPos-16<xHero && xPos+16>xHero && yPos-16<yHero && yPos+16>yHero)
+                        {
+                            hero.health = hero.health - enemies[x].damage;
+                        }
+                }
+        }
+        function heroShoot()
+        {
+            var mapMouseX = MapX + mouseX - 16;
+            var mapMouseY = MapY + mouseY - 16;
+            var xSlope = 0;
+            var ySlope = 0;
+            var d = "";
+            if(mouse == true && hero.shootCount > 6 && hero.mode == "shoot" && hero.modeBad == false)
+                {
+                    if(1 == 1)
+                        {
+                            xSlope = (mapMouseX) - (MapX + canvasW/2);
+                            ySlope = (mapMouseY) - (MapY + canvasH/2);
+                            if(Math.abs(xSlope) >= Math.abs(ySlope))
+                                {
+                                    if(xSlope>0)
+                                        d = "right";
+                                    else
+                                        d = "left";
+                                }
+                            else
+                                {
+                                    if(ySlope>0)
+                                        d = "down";
+                                    else
+                                        d = "up";
+                                }
+
+                            damageToEnemies[allDamage.damageECount] = {x1 : MapX + canvasW/2 - 8, y1 : MapY + canvasH/2 - 16, x2 : mapMouseX, y2 : mapMouseY, damage : hero.damage, direction : d, animation : 0, name : "hero"};
+                            hero.shootCount = 0;
+                            allDamage.damageECount++;
+                            //playShot();
+                            shotCount++;
+		                      //playShot3();
+                        }
+                }
+            hero.shootCount++;
+        }
+        function updateProjectiles()
+        {
+            var xPos = 0;
+            var yPos = 0;
+            var xE = 0;
+            var yE = 0;
+            for(x = 0; x < damageToEnemies.length; x++)
+                {
+                    switch(damageToEnemies[x].direction)
+                        {
+                            case "up":
+                                damageToEnemies[x].y1 = damageToEnemies[x].y1 - 32;
+                                break;
+                            case "down":
+                                damageToEnemies[x].y1 = damageToEnemies[x].y1 + 32;
+                                break;
+                            case "left":
+                                damageToEnemies[x].x1 = damageToEnemies[x].x1 - 32;
+                                break;
+                            case "right":
+                                damageToEnemies[x].x1 = damageToEnemies[x].x1 + 32;
+                                break;
+                        }
+                    damageToEnemies[x].animation++;
+                    damageToEnemies[x].animation = damageToEnemies[x].animation % 2 + 1;
+                    xPos = damageToEnemies[x].x1;
+                    yPos = damageToEnemies[x].y1;
+                    if(checkMovement(xPos, yPos) == false)
+                        {
+                            damageToEnemies.splice(x,1);
+                            allDamage.damageECount = allDamage.damageECount - 1;
+                            continue;
+                            
+                        }
+                    for(y = 0; y < enemies.length; y++)
+                        {
+                            xE = enemies[y].x;
+                            yE = enemies[y].y;
+                            if(xE-48<xPos&&xE+48>xPos&&yE-48<yPos&&yE+48>yPos)
+                                {
+                                    enemies[y].currentHealth = enemies[y].currentHealth - damageToEnemies[x].damage;
+                                    if(enemies[y].currentHealth <= 0)
+                                        {
+                                            if(damageToEnemies[x].name == "hero")
+                                                {
+                                                    hero.exp = hero.exp + (enemies[y].type);
+                                                }
+                                            for(z = 0; z < villager.length; z++)
+                                                {
+                                                    if(villager[z].name == damageToEnemies[x].name)
+                                                        {
+                                                            villager[z].exp = villager[z].exp + (enemies[y].type * 2);
+                                                            break;
+                                                        }
+                                                }
+                                        }
+                                    damageToEnemies.splice(x,1);
+                                    allDamage.damageECount = allDamage.damageECount - 1;
+                                    x = x - 1;
+                                    break;
+                                }
+                        }
+                }
+        }
+        function updateHeroDirection()
+        {
+            x = (mouseX - 16) - (canvasW/2);
+            y = (mouseY - 16) - (canvasH/2);
+            hero.mouseAngle = Math.atan2(y,x);
+            hero.mouseAngle = hero.mouseAngle * 57.2958;
+            hero.mouseAngle = (hero.mouseAngle + 180) % 360;
+            hero.direction = Math.ceil((hero.mouseAngle + 45) / 90);
+            if (hero.direction == 5)
+                hero.direction = 4;
+        }
+        function updateHeroMovement()
+        {
+            var goodMove = true;
+            var goodMove2 = true;
+            
+           if (left == true)
+                {
+                    MapX = MapX - moveSpeed;
+                    goodMove = checkMovement(MapX + canvasW/2, MapY + canvasH/2);
+                    goodMove2 = checkFencedRegion(MapX + canvasW/2, MapY + canvasH/2);
+                    heroAnimation();
+                    if(goodMove == false || goodMove2 == false)
+                        {
+                            MapX = MapX + moveSpeed;
+                        }
+                }
+            if (right == true)
+                {
+                    MapX = MapX + moveSpeed;
+                    goodMove = checkMovement(MapX + canvasW/2, MapY + canvasH/2);
+                    goodMove2 = checkFencedRegion(MapX + canvasW/2, MapY + canvasH/2);
+                    heroAnimation();
+                    if(goodMove == false || goodMove2 == false)
+                        {
+                            MapX = MapX - moveSpeed;
+                        }
+                }
+            if  (up == true)
+                {
+                    MapY = MapY + moveSpeed;
+                    goodMove = checkMovement(MapX + canvasW/2, MapY + canvasH/2);
+                    goodMove2 = checkFencedRegion(MapX + canvasW/2, MapY + canvasH/2);
+                    heroAnimation();
+                    if(goodMove == false || goodMove2 == false)
+                        {
+                            MapY = MapY - moveSpeed;
+                        }
+                }
+            if (down == true)
+                {
+                    MapY = MapY - moveSpeed;
+                    goodMove = checkMovement(MapX + canvasW/2, MapY + canvasH/2);
+                    goodMove2 = checkFencedRegion(MapX + canvasW/2, MapY + canvasH/2);
+                    heroAnimation();
+                    if(goodMove == false || goodMove2 == false)
+                        {
+                            MapY = MapY + moveSpeed;
+                        }
+                } 
+            heroX = MapX + canvasW/2;
+            heroY = MapY + canvasH/2;
+        }
+        function checkMovement(x, y)
+        {   
+            //Change array from 'map' to the full building one. Then do the same for elevation.
+            var goodMove = true;
+            var checker = 0;
+            if(x < 0 || x > 3808 || y < 0 || y > 3808)
+                goodMove = false;
+            checker = mapFull[ValueAtXY(Math.floor(x/32) * 32,Math.floor(y/32) * 32)];
+            if(checker < 50 && checker != 0)
+                goodMove = false;
+            checker = mapFull[ValueAtXY(Math.ceil(x/32) * 32,Math.floor(y/32) * 32)];
+            if(checker < 50 && checker != 0)
+                goodMove = false;
+            checker = mapFull[ValueAtXY(Math.floor(x/32) * 32,Math.ceil(y/32) * 32)];
+            if(checker < 50 && checker != 0)
+                goodMove = false;
+           checker = mapFull[ValueAtXY(Math.ceil(x/32) * 32,Math.ceil(y/32) * 32)];
+            if(checker < 50 && checker != 0)
+                goodMove = false;
+            return goodMove;
+        }
+        function checkFencedRegion(x, y)
+        {
+            var goodMove = true;
+            var checker = 0;
+            if(x < 0 || x > 3808 || y < 0 || y > 3808)
+                goodMove = false;
+            checker = fencedRegion[ValueAtXY(Math.floor(x/32) * 32,Math.floor(y/32) * 32)];
+            if(checker == 1)
+                goodMove = false;
+            checker = fencedRegion[ValueAtXY(Math.ceil(x/32) * 32,Math.floor(y/32) * 32)];
+            if(checker == 1)
+                goodMove = false;
+            checker = fencedRegion[ValueAtXY(Math.floor(x/32) * 32,Math.ceil(y/32) * 32)];
+            if(checker == 1)
+                goodMove = false;
+           checker = fencedRegion[ValueAtXY(Math.ceil(x/32) * 32,Math.ceil(y/32) * 32)];
+            if(checker == 1)
+                goodMove = false;
+            return goodMove;
+        }
+        function checkFence(x, y)
+        {
+            var goodMove = true;
+            var checker = 0;
+            checker = fence[ValueAtXY(Math.floor(x/32) * 32,Math.floor(y/32) * 32)];
+            if(checker > 2 && checker < 7)
+                goodMove = false;
+            checker = fence[ValueAtXY(Math.ceil(x/32) * 32,Math.floor(y/32) * 32)];
+            if(checker > 2 && checker < 7)
+                goodMove = false;
+            checker = fence[ValueAtXY(Math.floor(x/32) * 32,Math.ceil(y/32) * 32)];
+            if(checker > 2 && checker < 7)
+                goodMove = false;
+            checker = fence[ValueAtXY(Math.ceil(x/32) * 32,Math.ceil(y/32) * 32)];
+            if(checker > 2 && checker < 7)
+                goodMove = false;
+
+            return goodMove;
+        }
+        function distance(x1, y1, x2, y2)
+        {
+            dist = Math.abs(Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2))));
+            return dist;
+        }
+        function villagerShoot()
+        {
+            var xSlope = 0;
+            var ySlope = 0;
+            var d = "";
+            for (var x = 0; x < villager.length; x++)
+                {
+                    if(villager[x] == 0 || villager[x].hospital == true)
+                        continue;
+                    if(villager[x].attackCount >= 6)
+                        {
+                            for (var y = 0; y < enemies.length; y++)
+                                {
+                                    if(distance(villager[x].x, villager[x].y, enemies[y].x, enemies[y].y) < 250)
+                                        {
+                                            xSlope = (enemies[y].x + 16) - (villager[x].x - 16);
+                                            ySlope = (enemies[y].y + 16) - (villager[x].y - 16);
+                                            if(Math.abs(xSlope) >= Math.abs(ySlope))
+                                            {
+                                                if(xSlope>0)
+                                                    {
+                                                        d = "right";
+                                                        villager[x].d2 = 3;
+                                                    }
+                                                else
+                                                    {
+                                                        d = "left";
+                                                        villager[x].d2 = 1;
+                                                    }
+                                            }
+                                            else
+                                            {
+                                                if(ySlope>0)
+                                                    {
+                                                        d = "down";
+                                                        villager[x].d2 = 4;
+                                                    }
+                                                else
+                                                    {
+                                                        d = "up";
+                                                        villager[x].d2 = 2;
+                                                    }
+                                            }
+                                            damageToEnemies[allDamage.damageECount] = {x1 : villager[x].x, y1 : villager[x].y, x2 : enemies[y].x + 16, y2 : enemies[y].y + 16, damage : 2, direction : d, animation : 0, name : villager[x].name};
+                                            villager[x].attackCount = 0;
+                                            allDamage.damageECount++;
+                                            //villagerDirection(enemies[y].x + 16, enemies[y].y + 16, x);
+                                            //playShot();
+                                            shotCount++;
+		                                      //playShot3();
+                                        }
+                                }
+                           
+                        }
+                    villager[x].attackCount++
+                }
+        }
+        function villagerMove()
+        {
+            for (var x = 0; x < villager.length; x++)
+                {
+                    if(villager[x] == 0 || villager[x].hospital == true)
+                        continue;
+                    var reset = false;
+                    vSpeed = 2;
+                    function move()
+                    {
+                        switch(villager[x].directionMove)
+                            {
+                                case 1:
+                                    villager[x].x = villager[x].x - vSpeed;
+                                    if(checkMovement(villager[x].x, villager[x].y) == false || checkFencedRegion(villager[x].x, villager[x].y) == false)
+                                        {
+                                            villager[x].x = villager[x].x + vSpeed;
+                                            reset = true;  
+                                        }
+                                    break;
+                                case 2:
+                                    villager[x].x = villager[x].x + vSpeed;
+                                    if(checkMovement(villager[x].x, villager[x].y) == false || checkFencedRegion(villager[x].x, villager[x].y) == false)
+                                        {
+                                            villager[x].x = villager[x].x - vSpeed;
+                                            reset = true;  
+                                        }
+                                    break;
+                                case 3:
+                                    villager[x].y = villager[x].y - vSpeed;
+                                    if(checkMovement(villager[x].x, villager[x].y) == false || checkFencedRegion(villager[x].x, villager[x].y) == false)
+                                        {
+                                            villager[x].y = villager[x].y + vSpeed;
+                                            reset = true;  
+                                        }
+                                    break;
+                                case 4:
+                                    villager[x].y = villager[x].y + vSpeed;
+                                    if(checkMovement(villager[x].x, villager[x].y) == false || checkFencedRegion(villager[x].x, villager[x].y) == false)
+                                        {
+                                            villager[x].y = villager[x].y - vSpeed;
+                                            reset = true;  
+                                        }
+                                    break;
+                            }
+                    }
+                    function changeDirection()
+                    {
+                        villager[x].directionMove = Math.floor((Math.random() * 4) + 1);
+                    }
+                    
+                    if(villager[x].directionMove == 0 || Math.floor((Math.random() * 100) + 1) == 5)
+                        changeDirection();
+                    
+                    move();
+                    while(reset == true)
+                        {
+                            reset = false;
+                            changeDirection();
+                            move();
+                        }
+                    
+                }
+        }
+        function monitorVillagerHealth()
+        {  
+            var xEnemy = 0;
+            var yEnemy = 0;
+            var xVillager = 0;
+            var yVillager = 0;
+            for(var x = 0; x < villager.length; x++)
+                {
+                    if(villager[x] == 0)
+                        continue;
+                    xVillager = villager[x].x;
+                    yVillager = villager[x].y;
+                    for(var y = 0; y < enemies.length; y++)
+                        {
+                            xEnemy = enemies[y].x;
+                            yEnemy = enemies[y].y;
+                            if(xEnemy-48<xVillager && xEnemy+48>xVillager && yEnemy-48<yVillager && yEnemy+48>yVillager)
+                                {
+                                    villager[x].currentHealth = villager[x].currentHealth - enemies[y].damage;
+                                }
+                        }
+                }
+            for(var x = 0; x < villager.length; x++)
+                {
+                    if(villager[x] == 0)
+                        continue;
+                    if(villager[x].currentHealth < 1 && villager[x].hospital == false)
+                          {
+                              villager[x].x = 1000000;
+                              villager[x].y = 1000000;
+                              villager[x].hospital = true;
+                              for( var z = 0; z< sizeOfHospital; z++)
+                                  {
+                                      if(hospital[z] == 0)
+                                          {
+                                            hospital[z] = {name : x, maxHealth : villager[x].maxHealth * 20, timeLeft : 0};
+                                            log.last = "";
+                                            log.list = log.list + "You: " + villager[x].name + " was injured>and was sent to the hospital!>>(Space)/";
+                                            break;
+                                          }
+                                      if(z == (sizeOfHospital - 1))
+                                          {
+                                            log.last = "";
+                                            log.list = log.list + "You: " + villager[x].name + " died since the hospital was full!>You: Try capturing more hospitals.>>>(Space)/";
+                                            villager[x] = 0;
+                                          }
+                                  }                            
+                          }
+                }
+        }
+        function monitorEnemyHealth()
+        {
+            var j = 0;
+            for(var i = 0; i < enemies.length; i++)
+                {
+                    if(enemies[i].spawnCheck > 1 && enemies[i].type < 20)
+                        {
+                            if(checkFencedRegion(enemies[i].x, enemies[i].y) == true)
+                                {
+                                    enemies[i].currentHealth = 0;
+                                }
+                            enemies[i].spawnCheck = enemies[i].spawnCheck - 1;
+                        }
+                        
+                }
+
+            for(var i = 0; i < enemies.length; i++)
+                {
+                    if(day.night == "false")
+                        enemies[i].currentHealth = enemies[i].currentHealth - enemies[i].maxHealth/250;
+                    enemies[i].currentHealth = enemies[i].currentHealth - enemies[i].maxHealth/1000;
+                    if(enemies[i].currentHealth <= 0)
+                        {
+                            resources = resources + enemies[i].type * Math.floor((Math.random() * 30) + 1);
+                            enemies.splice(i,1);
+                            GEnemies.enemyCount = GEnemies.enemyCount - 1;
+                            
+                        }
+                }
+        }
+        function generateEnemies ()
+        {
+            var time = 20;
+            if(day.night == false)
+                time = 120;
+            GEnemies.loopcount++;
+            if(day.night == true && bossCount < day.number && day.number<10)
+                {
+                    setGE();
+                    enemies[GEnemies.enemyCount] = bossInfo(day.number);
+                    GEnemies.enemyCount++;
+                    bossCount++;
+                    log.last = "";
+                    log.list = log.list + "You: The boss, " + bossName(bossCount) + ", is on the prowl.>Beware!>>(Space)/";
+                }
+            var max = day.number;
+            if(GEnemies.loopcount >= time && day.number<10)
+                {
+                    var check = setGE();
+                    if (check == true)
+                        {
+                            enemies[GEnemies.enemyCount] = enemyInfo(Math.floor((Math.random() * max) + 1));
+                            GEnemies.enemyCount++;
+                            GEnemies.loopcount = 0;
+                        }
+                }
+            if(day.number == 10 && day.night == true && finalBoss == 0)
+                {
+                    finalBoss = 1;
+                    GEnemies.x = 2650;
+                    GEnemies.y = 2300;
+                    enemies[GEnemies.enemyCount] = bossInfo(day.number);
+                    GEnemies.enemyCount++;
+                    bossCount++;
+                    log.last = "";
+                    //log.list = log.list + "You: The boss, " + bossName(bossCount) + ", is on the prowl.>Beware!>>(Space)/";
+                    log.list = log.list + "Grace: *SCREAMS*>Deven: HOW DID IT GET IN?!>James: Its the final boss!>(Space)/";
+                }
+        }
+        function setGE()
+        {
+
+            //GEnemies.x = Math.floor((MapX + canvasW/2)/32) * 32;
+            GEnemies.x = 140000;
+            GEnemies.y = Math.floor((MapY + canvasH/2)/32) * 32;
+            x = Math.floor((Math.random() * 600) + 1) - 300;
+            y = Math.floor((Math.random() * 600) + 1) - 300;
+            while(Math.abs(y) < Math.abs(x))
+                {
+                    x = Math.floor((Math.random() * 600) + 1) - 300;
+                    y = Math.floor((Math.random() * 600) + 1) - 300;
+                }
+            var safeCount = 0;
+            while(checkMovement(GEnemies.x, GEnemies.y) == false || checkFencedRegion(GEnemies.x, GEnemies.y) == true || checkFence(GEnemies.x, GEnemies.y) == false)
+                {
+                    if(safeCount > 10)
+                        {
+                            //alert("BAD");
+                            break;
+                        }
+                    GEnemies.x =  GEnemies.x + x;
+                    GEnemies.y =  GEnemies.y + y;
+                    if(GEnemies.x<0||GEnemies.x>30*120||GEnemies.y<0||GEnemies.y>30*120)
+                        {
+                            GEnemies.x = Math.floor((MapX + canvasW/2)/32) * 32;
+                            GEnemies.y = Math.floor((MapY + canvasH/2)/32) * 32;
+                            x = Math.floor((Math.random() * 600) + 1) - 300;
+                            y = Math.floor((Math.random() * 600) + 1) - 300;  
+                        }
+                    safeCount++;
+                    
+                }
+            if(safeCount > 10)
+                return false;
+            else
+                return true;
+        }
+        function enemyInfo(x)
+        {
+            var info = 0;
+            switch (x)
+                {
+                    case 1:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 5, 5, 3, 0 ,0, 5, x); 
+                        break;
+                    case 2:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 10, 10, 3, 0 ,0, 5, x); 
+                        break;
+                    case 3:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 20, 20, 10, 0 ,0, 5, x); 
+                        break;
+                    case 4:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 30, 30, 4, 0 ,0, 5, x); 
+                        break;
+                    case 5:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 50, 50, 7, 0 ,0, 5, x); 
+                        break;
+                    case 6:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 150, 150, 6, 0 ,0, 5, x); 
+                        break;
+                    case 7:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 400, 400, 7, 0 ,0, 5, x); 
+                        break;
+                    case 8:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 300, 300, 12, 0 ,0, 5, x); 
+                        break;
+                    case 9:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 600, 600, 10, 0 ,0, 5, x); 
+                        break;
+                    case 10:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 1250, 1250, 20, 0 ,0, 5, x); 
+                        break;
+                }
+            return info;
+        }
+        function bossInfo(x)
+        {
+            var info = 0;
+            switch (x)
+                {
+                    case 1:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 200, 200, 2, 0 ,0, 5, x+10); 
+                        break;
+                    case 2:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 300, 300, 5, 0 ,0, 5, x+10); 
+                        break;
+                    case 3:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 500, 500, 10, 0 ,0, 5, x+10); 
+                        break;
+                    case 4:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 1000, 1000, 15, 0 ,0, 5, x+10); 
+                        break;
+                    case 5:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 3000, 3000, 18, 0 ,0, 5, x+10); 
+                        break;
+                    case 6:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 3000, 3000, 20, 0 ,0, 5, x+10); 
+                        break;
+                    case 7:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 2500, 2500, 23, 0 ,0, 5, x+10); 
+                        break;
+                    case 8:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 3000, 3000, 30, 0 ,0, 5, x+10); 
+                        break;
+                    case 9:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 9000, 9000, 5, 0 ,0, 5, x+10); 
+                        break;
+                    case 10:
+                        info = new enemy(GEnemies.x, GEnemies.y, 0, 30000, 30000, 2, 0 ,0, 5, x+10); 
+                        break;
+                }
+            return info;
+        }
+        function bossName(x)
+        {
+            
+            var info = "";
+            switch (x)
+                {
+                    case 1:
+                        info = "Beginner's Luck";
+                        break;
+                    case 2:
+                        info = "Petreefied";
+                        break;
+                    case 3:
+                        info = "Mystery Man";
+                        break;
+                    case 4:
+                        info = "Let it Bee";
+                        break;
+                    case 5:
+                        info = "Shark Man";
+                        break;
+                    case 6:
+                        info = "When Pigs Fly";
+                        break;
+                    case 7:
+                        info = "FLOWER POWER!"; 
+                        break;
+                    case 8:
+                        info = "Turkey of Terror";
+                        break;
+                    case 9:
+                        info = "Mr.8Legs";
+                        break;
+                    case 10:
+                        info = "Headless Businessman";
+                        break;
+                }
+            return info;
+        }
+        function moveEnemies()
+        {
+            for(x = 0; x < enemies.length; x++)
+                {
+                    var xChange = 2875 - enemies[x].x ;
+                    var yChange = 2150 - enemies[x].y;
+                    var change = (xChange + yChange) /2;
+                    var xFail = false;
+                    var yFail = false;
+                    
+                    if (change != 0)
+                        xChange = (xChange * 1.0)/(Math.abs(change));
+                    if (change!= 0)
+                        yChange = (yChange * 1.0)/(Math.abs(change));
+                    if (Math.abs(yChange) > 1)
+                        yChange = (yChange * 1.0)/(Math.abs(yChange));
+                    if (Math.abs(xChange) > 1)
+                        xChange = (xChange * 1.0)/(Math.abs(xChange));
+                        
+                
+                    xChange = xChange + (enemies[x].xTrend * 0.1);
+                    yChange = yChange + (enemies[x].yTrend * 0.1);
+                    var move = 0;
+                    function doX()
+                    {
+                        move = xChange;
+                        if(move > 8)
+                            move = 8;
+                        enemies[x].x = enemies[x].x + move;
+                        if(checkMovement(enemies[x].x, enemies[x].y) == false || checkFence(enemies[x].x, enemies[x].y) == false)
+                            {
+                                enemies[x].x = enemies[x].x - xChange;
+                                xFail = true;
+                            }
+                    }
+                    function doY()
+                    {
+                        move = yChange;
+                        if(move > 8)
+                            move = 8;
+                        enemies[x].y = enemies[x].y + move;
+                        if(checkMovement(enemies[x].x, enemies[x].y) == false || checkFence(enemies[x].x, enemies[x].y) == false)
+                            {
+                                enemies[x].y = enemies[x].y - yChange;
+                                yFail = true;
+                            }
+                    }
+                    doX();
+                    doY();
+                    if(xFail == true)
+                        {
+                            if (yChange!= 0)
+                                yChange = (yChange * 1.0)/(Math.abs(yChange));
+                             yChange = yChange + (enemies[x].yTrend * 0.3);
+                            doY();
+                        }
+                    if(yFail == true)
+                        {
+                             if (xChange != 0)
+                                xChange = (xChange * 1.0)/(Math.abs(xChange));
+                            xChange = xChange + (enemies[x].xTrend * 0.3);
+                            doX();
+                            
+                        }
+                    random = Math.random() - 0.5;
+                    enemies[x].xTrend = (enemies[x].xTrend * 0.2) + xChange;
+                    random = Math.random() - 0.5;
+                    enemies[x].yTrend = (enemies[x].yTrend * 0.2) + yChange;
+                }
+        }
+        function drawEnemies()
+        {  
+            for(x = 0; x < enemies.length; x++)
+                {
+                    ctx.globalAlpha = transparency;
+                    var xPos = enemies[x].x - MapX;
+                    var yPos = enemies[x].y - MapY;
+                    if (drawX+32>xPos && drawX-32<xPos && drawY+32>yPos && drawY-32<yPos)
+                        {
+
+                            var number = enemies[x].type % 10;
+                            if(number == 2 || number == 3 || number == 4 || number == 5 || number == 7 || number == 9)
+                                yPos = yPos - 32;
+                            if(number == 0)
+                                yPos = yPos - 64;
+                            var id = "Enemy" + number;
+                            var img = document.getElementById(id);
+                            var barLength = (enemies[x].currentHealth/enemies[x].maxHealth) * 28;
+                            ctx.drawImage(img, xPos, yPos);
+                            //box
+                            ctx.beginPath();
+                            ctx.rect(xPos, yPos - 12, 32, 2);
+                            ctx.fillStyle = "red";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos + (30 - barLength), yPos - 10, barLength, 3);
+                            ctx.fillStyle = "red";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos, yPos - 7, 32, 2);
+                            ctx.fillStyle = "red";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos, yPos - 12, 2, 7);
+                            ctx.fillStyle = "red";
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.rect(xPos + 30, yPos - 12, 2, 7);
+                            ctx.fillStyle = "red";
+                            ctx.fill();
+                             if(number == 2 || number == 3 || number == 4 || number == 5 || number == 7 || number == 9)
+                                yPos = yPos + 32;
+                            if(number == 0)
+                                yPos = yPos + 64;
+                            if(enemies[x].type > 10)
+                                {
+                                    ctx.font = '10pt Calibri';
+                                    ctx.fillStyle = "red";
+                                    ctx.fillText(bossName(enemies[x].type - 10), xPos - 16, yPos + 42);
+                                }
+                            else
+                                {
+                                    ctx.font = '10pt Calibri';
+                                    ctx.fillStyle = "red";
+                                    ctx.fillText(enemies[x].type, xPos + 16, yPos + 42);
+                                }
+                        }
+                }
+        }
+        function drawVillagers()
+        {
+            for(x = 0; x < villager.length; x++)
+                {
+                    if(villager[x] == 0 || villager[x].hospital == true)
+                        continue;
+
+                    var xPos = villager[x].x - MapX;
+                    var yPos = villager[x].y - MapY;
+                    var xMouse = mouseX - 16;
+                    var yMouse = mouseY - 16;
+                    if (drawX+32>xPos && drawX-32<xPos && drawY+32>yPos && drawY-32<yPos)
+                        {
+                            if(villager[x].animationCount >= 10)
+                            {
+                                villager[x].animationCycle++;
+                                villager[x].animationCycle = villager[x].animationCycle % 4;
+                                villager[x].animationCount = 0;
+                            }
+                            villager[x].animationCount++;
+                            animation = ((villager[x].d2 - 1) * 4) + villager[x].animationCycle + 1;
+                            var id = "Hero" + animation;
+                            var img = document.getElementById(id);
+                            ctx.drawImage(img, xPos + 8, yPos - 24);
+                            if (xMouse+48>xPos && xMouse-48<xPos && yMouse+48>yPos && yMouse-48<yPos)
+                                {
+                                    yPos =  yPos - 20;
+                                    ctx.font = '10pt Calibri';
+                                    ctx.fillStyle = "#00FF00";
+                                    ctx.fillText("(" + villager[x].lvl + ") " + villager[x].name, xPos - 10, yPos - 6);
+                                }
+                            else
+                                {
+                                    yPos =  yPos - 20;
+                                    var barLength = (villager[x].currentHealth/villager[x].maxHealth) * 28;
+                                    //box
+                                    ctx.beginPath();
+                                    ctx.rect(xPos, yPos - 12, 32, 2);
+                                    ctx.fillStyle = "#00FF00";
+                                    ctx.fill();
+                                    ctx.beginPath();
+                                    ctx.rect(xPos + (30 - barLength), yPos - 10, barLength, 3);
+                                    ctx.fillStyle = "#00FF00";
+                                    ctx.fill();
+                                    ctx.beginPath();
+                                    ctx.rect(xPos, yPos - 7, 32, 2);
+                                    ctx.fillStyle = "#00FF00";
+                                    ctx.fill();
+                                    ctx.beginPath();
+                                    ctx.rect(xPos, yPos - 12, 2, 7);
+                                    ctx.fillStyle = "#00FF00";
+                                    ctx.fill();
+                                    ctx.beginPath();
+                                    ctx.rect(xPos + 30, yPos - 12, 2, 7);
+                                    ctx.fillStyle = "#00FF00";
+                                    ctx.fill();
+                                }
+                            
+                            
+                        }
+                }
+        }
+        function monitorFenceHealth()
+        {
+            var checker = 0;
+            var x = 0;
+            var y = 0;
+            var setter = 0;
+            var range = 32;
+           for(var z = 0; z < enemies.length; z++)
+            {
+                checker = 0;
+                x = enemies[z].x;
+                y = enemies[z].y;
+                setter = 0;
+            
+                function checkHP()
+                {
+                    checker = fence[setter];
+                    if(checker > 2 && checker < 7)
+                        {
+                            fenceHP[setter] = fenceHP[setter] - enemies[z].damage;
+                            if(fenceHP[setter] <= 0)
+                                {
+                                    fenceHP[setter] = 0;
+                                    fence[setter] = fence[setter] + 100;
+                                    currentFences = currentFences - 1;
+                                    if(breach == false)
+                                        {
+                                            log.last = "";
+                                            var vill = randomVillager();
+                                            log.list = log.list + vill + ": AHHHH!>You: What's the matter?>" + vill +  ": There is a breach in the walls!>(Space)/"
+                                        }
+                                    breach = true;
+                                }
+                        }
+                }
+                setter = ValueAtXY(Math.floor(x /32) * 32 - range,Math.floor(y/32) * 32);
+                checkHP();
+                setter = ValueAtXY(Math.ceil(x/32) * 32 + range,Math.floor(y/32) * 32);
+                checkHP();
+                setter = ValueAtXY(Math.floor(x/32) * 32 - range,Math.ceil(y/32) * 32);
+                checkHP();
+                setter = ValueAtXY(Math.ceil(x/32) * 32 + range,Math.ceil(y/32) * 32);
+                checkHP();
+                setter = ValueAtXY(Math.floor(x /32) * 32,Math.floor(y/32) * 32 - range);
+                checkHP();
+                setter = ValueAtXY(Math.ceil(x/32) * 32,Math.floor(y/32) * 32 - range);
+                checkHP();
+                setter = ValueAtXY(Math.floor(x/32) * 32,Math.ceil(y/32) * 32 + range);
+                checkHP();
+                setter = ValueAtXY(Math.ceil(x/32) * 32,Math.ceil(y/32) * 32 + range);
+                checkHP();
+           }
+        }
+        function updateFence()
+        {
+            fence = fencedRegion.slice(0);
+            var tile = 0;
+            var aTile = 0;
+            for(y = 0; y< 120; y++)
+                {
+                    for(x = 0; x<120; x++)
+                        {
+                            tile = 120 * y + x;
+                            if(fence[tile] == 0)
+                                {  
+                                    aTile = tile - 121;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile - 120;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile - 119;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile - 1;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile + 1;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile + 119;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile + 120;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    aTile = tile + 121;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 1 )
+                                        fence[aTile] = 2;
+                                    
+                                }
+                        }
+                }
+            function checkHP(tile)
+            {
+                if(fenceHP[tile] <= 0 && fenceHP[tile] > -100000)
+                    {
+                        fenceHP[tile] = 0;
+                        fence[tile] = fence[tile] + 100;
+                        currentFences = currentFences - 1;
+                    }
+            }
+            var fail = true;
+            maxFence = 0;
+            currentFences = 0;
+            for(y = 0; y< 120; y++)
+                {
+                    for(x = 0; x<120; x++)
+                        {
+                            tile = 120 * y + x;
+                            if(fence[tile] == 0 || fence[tile] == 1)
+                                fenceHP[tile] = -100000;
+                            if(fence[tile] == 2)
+                                {
+                                    maxFence++;
+                                    currentFences++;
+                                    if(fenceHP[tile] == -100000)
+                                        fenceHP[tile] = fenceMaxHP;
+                                }
+                            if(fence[tile] == 2)
+                                {
+                                    aTile = tile + 120;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 0 )
+                                        {
+                                            fence[tile] = 3;
+                                            checkHP(tile);
+                                            continue;                  
+                                        }
+                                    aTile = tile - 120;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 0 )
+                                        {
+                                            fence[tile] = 4;
+                                            checkHP(tile);
+                                            continue;                  
+                                        }
+                                    aTile = tile - 1;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 0 )
+                                        {
+                                            fence[tile] = 5;
+                                            checkHP(tile);
+                                            continue;                  
+                                        }
+                                    aTile = tile + 1;
+                                    if(aTile >= 0 && aTile < 14400 && fence[aTile] == 0 )
+                                        {
+                                            fence[tile] = 6;
+                                            checkHP(tile);
+                                            continue;                  
+                                        }
+                                }
+                            
+                                              
+                        }
+                        
+                }
+        }
+        function setFencedRegion()
+        {
+            for (var x = 7278; x < 7304; x++)
+                {
+                    for(var y = 0; y < 17; y++)
+                        {
+                            fencedRegion[(120 * y) + x] = 0;
+                        }
+                }
+            updateFence();
+        }
+        function spawnVillager()
+        {
+            if(GVillagers.villagerCount < maxLivingSpace)
+                {
+                    GVillagers.x =  2650;
+                    GVillagers.y = 2300;
+                    random = Math.floor((Math.random() * 99) + 0);
+                    villager[GVillagers.villagerCount] = new villagers(GVillagers.x, GVillagers.y, 0, 50, 50, 2, 1, names[random], false); 
+                        GVillagers.villagerCount++;
+                }
+            else
+                notSpawed++;
+            
+        }
+        function setMouseInfo()
+        {
+            var xMouse = MapX + mouseX - 16;
+            var yMouse = MapY + mouseY - 16;
+            var currentSpot = ValueAtXY(xMouse, yMouse);
+            var testValue = mapFull[currentSpot];
+            var oldMod = currentSpot % 120 + 1;
+            var newMod = currentSpot % 120 + 1;
+            if(testValue < 50 && testValue != 2 && testValue != 0)
+                {
+                    while(mapFull[currentSpot] == testValue && Math.abs(oldMod - newMod) <= 1)
+                        {
+                            oldMod = currentSpot % 120 + 1;
+                            currentSpot = currentSpot - 1;
+                            newMod = currentSpot % 120 + 1;
+                        }
+                        if(mapFull[currentSpot] != testValue)
+                            currentSpot = currentSpot + 1;
+
+                    while(currentSpot <= 14400 && currentSpot >= 0 && mapFull[currentSpot] == testValue)
+                        {
+                            currentSpot = currentSpot - 120;
+                        }
+                    if(mapFull[currentSpot] != testValue)
+                        {
+                            currentSpot = currentSpot + 120;
+                        }
+                    mouseInfo.spot = currentSpot;
+                    
+                    //length and width
+                    currentSpot = mouseInfo.spot;
+                    testValue = mapFull[currentSpot];
+                    oldMod = currentSpot % 120 + 1;
+                    newMod = currentSpot % 120 + 1;
+                    while(mapFull[currentSpot] == testValue && Math.abs(oldMod - newMod) <= 1)
+                        {
+                            oldMod = currentSpot % 120 + 1;
+                            currentSpot = currentSpot + 1;
+                            newMod = currentSpot % 120 + 1;
+                        }
+                        if(mapFull[currentSpot] != testValue)
+                            currentSpot = currentSpot - 1;
+                    mouseInfo.length = (currentSpot - mouseInfo.spot) + 1;
+                    
+                    currentSpot = mouseInfo.spot;
+                    testValue = mapFull[currentSpot];
+                    var count = 1;
+                     while(currentSpot <= 14400 && currentSpot >= 0 && mapFull[currentSpot] == testValue)
+                        {
+                            count ++;
+                            currentSpot = currentSpot + 120;
+                        }
+                    if(mapFull[currentSpot] != testValue)
+                        {
+                            currentSpot = currentSpot - 120;
+                            count = count - 1;
+                        }
+                    mouseInfo.width = count;
+                    
+                    
+                }
+            else
+                {
+                    mouseInfo.spot = currentSpot;
+                    mouseInfo.length = 1;
+                    mouseInfo.width = 1;
+                }
+             
+            
+            
+        }
+        function playShot()
+        {
+//            if(shooter == false)
+//                {
+//                    shooter = true;
+//                    var shooting = document.getElementById("shot");
+//                    shooting.volume = 0.1;
+//                    shooting.playbackRate = 1;
+//                    shooting.play();
+//                    shooter = false;
+//                }
+        }
+        function storyPlay()
+        {
+            if(space == true || storyCount <= -1300)
+                {
+                    window.clearInterval(stuff);
+                    endStory = 1;
+                    playMusic();
+                    play();
+                   
+                }
+                var img = document.getElementById("title");
+                ctx.drawImage(img, canvasW/2 - titleW/2, canvasH/2 - titleH/2, titleW, titleH);
+                ctx.globalAlpha = 0.5;
+                ctx.fillStyle="black"; 
+                ctx.fillRect(0, 0, canvasW, canvasH); 
+                ctx.globalAlpha = transparency;
+                var img = document.getElementById("story");
+                ctx.drawImage(img, canvasW/2 - 400 , storyCount); 
+                ctx.font = '10pt Calibri';
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillText("Space to continue.", canvasW - 200, canvasH - 20);
+                storyCount = storyCount - 0.8;
+        }
+        function playShot3()
+        {
+            if(shotCount > 0)
+                {
+                    
+                    var shooting = document.getElementById("shot");
+					shooting.onended = function() {
+						shotCount--;
+						if(shotCount > 0) 
+						{
+							if(shotCount > 15)
+								shotCount = 15;
+							playShot3();
+						}
+					};
+                    shooting.volume = 0.1;
+                    shooting.playbackRate = 1;
+                    shooting.play();                    
+                }
+        }
+        function playMusic()
+        {
+            
+            var id = "music" + musicTime;
+            var music = document.getElementById(id);
+            if(endStory == 1)
+                {
+                    music.pause();
+                    music.currentTime = 199;
+                    endStory = 2;
+                }
+            music.onended = function() 
+            {
+                musicTime++;
+                if(musicTime>5)
+                    musicTime = 2;
+                playMusic();
+            }
+            music.volume = 0.1;
+            music.playbackRate = 1;
+            music.play();
+            
+
+
+
+            
+        }
+        function play()
+        {
+            
+            mapDataCount = 0;
+            var x = 0;
+             while(x < MapData.length)
+                {
+                    if(MapData.charAt(x) != "," && MapData.charAt(x) != " ")
+                        {
+                            map[mapDataCount] = MapData.charAt(x) - 48 + 48;
+                            if (MapData.charAt(x + 1) != "," && MapData.charAt(x + 1) != " ")
+                                {
+                                    map[mapDataCount] = (map[mapDataCount] * 1);
+                                    map[mapDataCount] = map[mapDataCount] + MapData.charAt(x+1) - 48 + 48;
+                                     x++;
+                                }
+                            mapDataCount++;
+                           
+                        }
+                    x++;
+                }
+            mapDataCount = 0;
+            var x = 0;
+             while(x < MapDataFull.length)
+                {
+                    if(MapDataFull.charAt(x) != "," && MapDataFull.charAt(x) != " ")
+                        {
+                            mapFull[mapDataCount] = MapDataFull.charAt(x) - 48 + 48;
+                            if (MapDataFull.charAt(x + 1) != "," && MapDataFull.charAt(x + 1) != " ")
+                                {
+                                    mapFull[mapDataCount] = (mapFull[mapDataCount] * 1);
+                                    mapFull[mapDataCount] = mapFull[mapDataCount] + MapDataFull.charAt(x+1) - 48 + 48;
+                                     x++;
+                                }
+                            mapDataCount++;
+                           
+                        }
+                    x++;
+                }
+            
+            GVillagers.x =  2650;
+            GVillagers.y = 2300;
+            villager[GVillagers.villagerCount] = new villagers(GVillagers.x, GVillagers.y, 0, 50, 50, 7, 1, "Deven", false); 
+                    GVillagers.villagerCount++;
+            villager[GVillagers.villagerCount] = new villagers(GVillagers.x, GVillagers.y, 0, 50, 50, 7, 2, "Ashley", false); 
+                    GVillagers.villagerCount++;
+            villager[GVillagers.villagerCount] = new villagers(GVillagers.x, GVillagers.y, 0, 50, 50, 7, 3, "James", false); 
+                    GVillagers.villagerCount++;
+            villager[GVillagers.villagerCount] = new villagers(GVillagers.x, GVillagers.y, 0, 50, 50, 7, 4, "Grace", false); 
+                    GVillagers.villagerCount++;
+
+            
+            
+            setFencedRegion();
+            stuff = setInterval(function() {drawMap();} , 1000/fps);
+            //var stuff2 = setInterval(function() {playHeartbeat();} , 1000/20);
+        }
+        document.onkeydown =
+            function mRect(e) 
+            {
+                e = e || window.event;
+
+                if (e.keyCode == '68' )
+                {
+                    right = true;
+
+                }
+
+                if (e.keyCode == '65' )
+                {
+                    left = true;
+
+                }
+
+
+                if (e.keyCode == '83' )
+                {
+                    up = true;
+
+                }
+
+                if (e.keyCode == '87' )
+                {
+                    down = true;
+
+                }
+                if (e.keyCode == '32' )
+                {
+                    
+                    if(tutorial == 1&&space == false)
+                            tutorial = 2;
+                     if(tutorial == 4&&space == false)
+                            tutorial = 5;
+                     if(tutorial == 7&&space == false)
+                            tutorial = 8;
+                     if(tutorial == 10&&space == false)
+                            tutorial = 11;
+                     if(tutorial == 13&&space == false)
+                            tutorial = 14;
+                     if(tutorial == 16&&space == false)
+                            tutorial = 17;
+                    if(tutorial == 19&&space == false)
+                            tutorial = 20;
+                    space = true;
+
+                   
+                }
+
+            }
+         document.onkeyup =
+            function mRect(e) 
+            {
+                e = e || window.event;
+
+                if (e.keyCode == '68' )
+                {
+                    right = false;
+
+                }
+
+                if (e.keyCode == '65' )
+                {
+                    left = false;
+
+                }
+
+
+                if (e.keyCode == '83' )
+                {
+                    up = false;
+
+                }
+
+                if (e.keyCode == '87' )
+                {
+                    down = false;
+
+                }
+                if (e.keyCode == '32' )
+                {
+                    
+                    if(tutorial == 2&&space == true)
+                        {
+                            tutorial = 3;
+                            drawMap();
+                        }
+                    if(tutorial == 5&&space == true)
+                        {
+                            tutorial = 6;
+                            drawMap();
+                        }
+                    if(tutorial == 8&&space == true)
+                        {
+                            tutorial = 9;
+                            drawMap();
+                        }
+                    if(tutorial == 11&&space == true)
+                        {
+                            hero.mode = 'build';
+                            tutorial = 12;
+                            drawMap();
+                        }
+                    if(tutorial == 14&&space == true)
+                        {
+                            tutorial = 15;
+                            drawMap();
+                        }
+                    if(tutorial == 17&&space == true)
+                        {
+                            tutorial = 18;
+                            drawMap();
+                        }
+                    if(tutorial == 20&&space == true)
+                        {
+                            tutorial = 21;
+                            hero.mode = "shoot";
+                            stuff = setInterval(function() {drawMap();} , 1000/fps);
+                            
+                        }
+                    space = false;
+                }
+
+            }
+        function sizeAdjust()
+        {
+                canvas = document.getElementById("mycanvas");
+                canvasW = window.innerWidth 
+                    || document.documentElement.clientWidth
+                    || document.body.clientWidth; 
+                canvasH = window.innerHeight
+                    || document.documentElement.clientHeight
+                    || document.body.clientHeight; 
+                canvasH = canvasH - 15;
+                canvasW = canvasW - 5;
+                canvasH = canvasH - (canvasH % 2);
+                canvasW = canvasW - (canvasW % 2);
+                if(canvasW > 1500)
+                    canvasW = 1500;
+                if(canvasH > 800)
+                    canvasH = 800;
+            if(canvas.width != canvasW)
+                {
+                canvas.width = canvasW;
+                }
+            if(canvas.height != canvasH)
+                {
+                canvas.height = canvasH;
+                }
+        }
+        function ValueAtXY(x, y)
+        {
+            var row = Math.round(x/32);
+            var collum = Math.round(y/32);
+            return row + (collum * 120);
+            
+        }
+        function mainMenu()
+        {
+            var ratio = 1;
+            var H = 800 * ratio;
+            var W = 1500 * ratio;
+            while(H>canvasH && W>canvasW)
+                {
+                    ratio = ratio - 0.01;
+                    H = 800 * ratio;
+                    W = 1500 * ratio;
+                    
+                }
+            titleH = H;
+            titleW = W;
+            var img = document.getElementById("title");
+            ctx.drawImage(img, canvasW/2 - W/2, canvasH/2 - H/2, W, H);
+            var img = document.getElementById("titleText");
+            ctx.drawImage(img, canvasW/2 - 400, canvasH/2 - 150);
+            var img = document.getElementById("play");
+            ctx.drawImage(img, canvasW/2 - 64, canvasH/2 - 32);
+            window.alert("*****IMPORTATNT******\nPlease read the following:");
+            window.alert("Welcome to Reconstruct by Jagdeep and Calvin. This National STEM Game Video Game Middle School Category Prize has been made possible with the generous assistance of the Joan Ganz Cooney Center. Please enjoy!");        
+            
+        }
+        window.onload =
+            function Game() 
+            {
+                sizeAdjust();
+                document.body.style.marginTop = 0;
+                document.body.style.marginLeft = 0;
+                document.body.style.marginBottom = 0;
+                document.body.style.marginUp = 0;
+                MapX = 2650 - canvasW/2;
+                MapY = 2300 - canvasH/2;
+                MapX = MapX - (MapX % 16);
+                MapY = MapY - (MapY % 16);
+                this.ctx = document.getElementById("mycanvas").getContext("2d");
+                mainMenu();
+                
+            }
+         document.onmousedown = 
+            function mousedown(e) 
+            {
+                e = e || window.event;
+              if(startGame == 0 && mouseX<canvasW/2+64 && mouseX>canvasW/2-64 && mouseY<canvasH/2+32 && mouseY>canvasH/2-32)
+                    {
+                        startGame = 1;
+                        var button = new sound (0.7, 1);
+                        button = document.getElementById("button");
+                        button.play();
+                        storyCount = canvasH - 30;
+                        playMusic();
+                        stuff = setInterval(function() {storyPlay();} , 1000/fps);
+                        
+                    }
+             if(startGame==1&&mouseX-16<96&& mouseX-16>0&&mouseY-16<96&&mouseY-16>32&&mouse == false)
+                    {
+                        startGame = 2;
+                        window.clearInterval(stuff);
+                        ctx.globalAlpha = 0.5;
+                        ctx.fillStyle="black"; 
+                        ctx.fillRect(0, 0, canvasW, canvasH); 
+                        ctx.globalAlpha = transparency;
+                        var img = document.getElementById("pause");
+                        ctx.drawImage(img, canvasW/2 - 64, canvasH/2 - 64,128,128);
+                        var button = new sound (0.7, 1);
+                        button = document.getElementById("button");
+                        button.play();
+                        mouse = true;
+                    }
+             //if(startGame==2&&mouseX-16<96&& mouseX-16>0&&mouseY-16<96&&mouseY-16>32&&mouse == false)
+             if(startGame==2&&mouse == false)
+                    {
+                        startGame = 1;
+                        var button = new sound (0.7, 1);
+                        button = document.getElementById("button");
+                        button.play();
+                        stuff = setInterval(function() {drawMap();} , 1000/fps);
+                        mouse = true;
+                    }
+             if(message5==1&&mouse == false)
+                    {
+                        message5 = 2;
+                        mouse = true;
+                    }
+             if(message5==2&&mouse == false)
+                    {
+                        message5 = 3;
+                        var button = new sound (0.7, 1);
+                        button = document.getElementById("button");
+                        button.play();
+                        stuff = setInterval(function() {drawMap();} , 1000/fps);
+                        mouse = true;
+                    }
+                mouse = true;
+            }
+        document.onmouseup = 
+            function mouseup(e) 
+            {
+                e = e || window.event;
+                mouse = false;
+            }
+        window.addEventListener('mousemove', function (e) {
+            canvas = document.getElementById("mycanvas");
+            mouseX = e.pageX;
+            mouseY = e.pageY;
+        })      
+    </script>
+
+</head>
+
+
+
+
+
+
+<body style="background-color:black" >
+    <audio id="heartbeat" src="Sounds/heartbeat-02a%20(mp3cut.net).mp3"></audio>
+    <audio id="button" src="Sounds/Click2-Sebastian-759472264(soundBible)%20(mp3cut.net).mp3"></audio>
+    <audio id="shot" src="Sounds/Silencer-SoundBible.com-1632156458%20(mp3cut.net).mp3"></audio>
+    <audio id="music1" src="Sounds/Oppressive%20Gloom.mp3"></audio>
+    <audio id="music2" src="Sounds/Alan%20Walker%20-%20Force.mp3"></audio>
+    <audio id="music3" src="Sounds/Electro-Light%20-%20Symbolism.mp3"></audio>
+    <audio id="music4" src="Sounds/Alan%20Walker%20-%20Fade.mp3"></audio>
+    <audio id="music5" src="Sounds/DEAF%20KEV%20-%20Invincible.mp3"></audio>
+    <img hidden id="title" width="0" height="0" src="TitleScreen.png" alt="what?">
+    <img hidden id="0" width="0" height="0" src="Buildings/Grass.png" alt="what?">
+    <img hidden id="2" width="0" height="0" src="Buildings/Lamp.png" alt="what?">
+    <img hidden id="3" width="0" height="0" src="Buildings/Tree.png" alt="what?">
+    <img hidden id="4" width="0" height="0" src="Buildings/Bush.png" alt="what?">
+    <img hidden id="5" width="0" height="0" src="Buildings/LHorizontalBench.png" alt="what?">
+    <img hidden id="6" width="0" height="0" src="Buildings/CHorizontalBench.png" alt="what?">
+    <img hidden id="7" width="0" height="0" src="Buildings/RHorizontalBench.png" alt="what?">
+    <img hidden id="8" width="0" height="0" src="Buildings/PMeter.png" alt="what?">
+    <img hidden id="9" width="0" height="0" src="Buildings/MBox.png" alt="what?">
+    <img hidden id="10" width="0" height="0" src="Buildings/House.png" alt="what?">
+    <img hidden id="11" width="0" height="0" src="Buildings/Apartment.png" alt="what?">
+    <img hidden id="12" width="0" height="0" src="Buildings/Warehouse.png" alt="what?">
+    <img hidden id="13" width="0" height="0" src="Buildings/GHouse.png" alt="what?">
+    <img hidden id="14" width="0" height="0" src="Buildings/PPlant.png" alt="what?">
+    <img hidden id="15" width="0" height="0" src="Buildings/HQuarters.png" alt="what?">
+    <img hidden id="16" width="0" height="0" src="Buildings/Rubble.png" alt="what?">
+    <img hidden id="17" width="0" height="0" src="Buildings/DStore.png" alt="what?">
+    <img hidden id="18" width="0" height="0" src="Buildings/PGarage.png" alt="what?">
+    <img hidden id="19" width="0" height="0" src="Buildings/Hospital.png" alt="what?">
+    <img hidden id="20" width="0" height="0" src="Buildings/PStation.png" alt="what?">
+    <img hidden id="21" width="0" height="0" src="Buildings/Cemetery.png" alt="what?">
+    <img hidden id="22" width="0" height="0" src="Buildings/TStation.png" alt="what?">
+    <img hidden id="23" width="0" height="0" src="Buildings/FFRestaurant.png" alt="what?">
+    <img hidden id="24" width="0" height="0" src="Buildings/Bank.png" alt="what?">
+    <img hidden id="25" width="0" height="0" src="Buildings/Library.png" alt="what?">
+    <img hidden id="26" width="0" height="0" src="Buildings/Theater.png" alt="what?">
+    <img hidden id="27" width="0" height="0" src="Buildings/School.png" alt="what?">
+    <img hidden id="28" width="0" height="0" src="Buildings/CStore.png" alt="what?">
+    <img hidden id="30" width="0" height="0" src="Buildings/Shredder.png" alt="what?">
+    <img hidden id="31" width="0" height="0" src="Buildings/Sniper.png" alt="what?">
+    <img hidden id="32" width="0" height="0" src="Buildings/Blaster.png" alt="what?">
+    <img hidden id="33" width="0" height="0" src="Buildings/Bomb.png" alt="what?">
+    <img hidden id="34" width="0" height="0" src="Buildings/Ditch.png" alt="what?">
+    <img hidden id="40" width="0" height="0" src="Buildings/UBunker.png" alt="what?">
+    <img hidden id="50" width="0" height="0" src="Buildings/FRoad.png" alt="what?">
+    <img hidden id="51" width="0" height="0" src="Buildings/URoad.png" alt="what?">
+    <img hidden id="52" width="0" height="0" src="Buildings/DRoad.png" alt="what?">
+    <img hidden id="53" width="0" height="0" src="Buildings/RRoad.png" alt="what?">
+    <img hidden id="54" width="0" height="0" src="Buildings/LRoad.png" alt="what?">
+    <img hidden id="Hero1" width="0" height="0" src="Players/left.png" alt="what?">
+    <img hidden id="Hero2" width="0" height="0" src="Players/left2.png" alt="what?">
+    <img hidden id="Hero3" width="0" height="0" src="Players/left.png" alt="what?">
+    <img hidden id="Hero4" width="0" height="0" src="Players/left3.png" alt="what?">
+    <img hidden id="Hero5" width="0" height="0" src="Players/down.png" alt="what?">
+    <img hidden id="Hero6" width="0" height="0" src="Players/down2.png" alt="what?">
+    <img hidden id="Hero7" width="0" height="0" src="Players/down.png" alt="what?">
+    <img hidden id="Hero8" width="0" height="0" src="Players/down3.png" alt="what?">
+    <img hidden id="Hero9" width="0" height="0" src="Players/right.png" alt="what?">
+    <img hidden id="Hero10" width="0" height="0" src="Players/right2.png" alt="what?">
+    <img hidden id="Hero11" width="0" height="0" src="Players/right.png" alt="what?">
+    <img hidden id="Hero12" width="0" height="0" src="Players/right3.png" alt="what?">
+    <img hidden id="Hero13" width="0" height="0" src="Players/up.png" alt="what?">
+    <img hidden id="Hero14" width="0" height="0" src="Players/up2.png" alt="what?">
+    <img hidden id="Hero15" width="0" height="0" src="Players/up.png" alt="what?">
+    <img hidden id="Hero16" width="0" height="0" src="Players/up3.png" alt="what?">
+    <img hidden id="U1" width="0" height="0" src="Effects/Projectile1.png" alt="what?">
+    <img hidden id="U2" width="0" height="0" src="Effects/Projectile2.png" alt="what?">
+    <img hidden id="D1" width="0" height="0" src="Effects/Projectile3.png" alt="what?">
+    <img hidden id="D2" width="0" height="0" src="Effects/Projectile4.png" alt="what?">
+    <img hidden id="R1" width="0" height="0" src="Effects/Projectile7.png" alt="what?">
+    <img hidden id="R2" width="0" height="0" src="Effects/Projectile8.png" alt="what?">
+    <img hidden id="L1" width="0" height="0" src="Effects/Projectile5.png" alt="what?">
+    <img hidden id="L2" width="0" height="0" src="Effects/Projectile6.png" alt="what?">
+    <img hidden id="HeroTest" width="0" height="0" src="Players/forDeeps.png" alt="what?">
+    <img hidden id="Villager" width="0" height="0" src="Players/Villager.png" alt="what?">
+    <img hidden id="HFence" width="0" height="0" src="Buildings/HWall.png" alt="what?">
+    <img hidden id="VFence" width="0" height="0" src="Buildings/VWall.png" alt="what?">
+    <img hidden id="Lighting" width="0" height="0" src="Effects/whiteThing3.png" alt="what?">
+    <img hidden id="sword" width="0" height="0" src="Gui/sword.png" alt="what?">
+    <img hidden id="hammer" width="0" height="0" src="Gui/hammer.png" alt="what?">
+    <img hidden id="green" width="0" height="0" src="Gui/Selector.png" alt="what?">
+    <img hidden id="pause" width="0" height="0" src="Gui/pause.png" alt="what?">
+    <img hidden id="log" width="0" height="0" src="Gui/TextBox.png" alt="what?">
+    <img hidden id="info" width="0" height="0" src="Gui/InfoCorner.png" alt="what?">
+    <img hidden id="story" width="0" height="0" src="Effects/Story.png" alt="what?">
+    <img hidden id="titleText" width="0" height="0" src="Effects/ttle.png" alt="what?">
+    <img hidden id="play" width="0" height="0" src="Effects/play.png" alt="what?">
+    <img hidden id="youDied" width="0" height="0" src="Effects/youDied.png" alt="what?">
+    <img hidden id="HQDeath" width="0" height="0" src="Effects/HQDeath.png" alt="what?">
+    <img hidden id="heroDeath" width="0" height="0" src="Effects/heroDeath.png" alt="what?">
+    <img hidden id="youWin" width="0" height="0" src="Effects/youWin.png" alt="what?">
+    <img hidden id="winText" width="0" height="0" src="Effects/winText.png" alt="what?">
+    <img hidden id="message" width="0" height="0" src="Effects/message.png" alt="what?">
+    <img hidden id="t1" width="0" height="0" src="Effects/t1.png" alt="what?">
+    <img hidden id="t2" width="0" height="0" src="Effects/t2.png" alt="what?">
+    <img hidden id="t3" width="0" height="0" src="Effects/t3.png" alt="what?">
+    <img hidden id="t4" width="0" height="0" src="Effects/t4.png" alt="what?">
+    <img hidden id="t5" width="0" height="0" src="Effects/t5.png" alt="what?">
+    <img hidden id="t6" width="0" height="0" src="Effects/t6.png" alt="what?">
+    <img hidden id="t7" width="0" height="0" src="Effects/t7.png" alt="what?">
+    <img hidden id="Enemy1" width="0" height="0" src="Enemies/LifelessRedBlob.png" alt="what?">
+    <img hidden id="Enemy2" width="0" height="0" src="Enemies/HappyTree.png" alt="what?">
+    <img hidden id="Enemy3" width="0" height="0" src="Enemies/MysteriousStranger.png" alt="what?">
+    <img hidden id="Enemy4" width="0" height="0" src="Enemies/FlyingStinger.png" alt="what?">
+    <img hidden id="Enemy5" width="0" height="0" src="Enemies/Bob.png" alt="what?">
+    <img hidden id="Enemy6" width="0" height="0" src="Enemies/MrPinkUnicorn.png" alt="what?">
+    <img hidden id="Enemy7" width="0" height="0" src="Enemies/CrookedFlower.png" alt="what?">
+    <img hidden id="Enemy8" width="0" height="0" src="Enemies/AngryDodou.png" alt="what?">
+    <img hidden id="Enemy9" width="0" height="0" src="Enemies/8LegsOfTerror.png" alt="what?">
+    <img hidden id="Enemy0" width="0" height="0" src="Enemies/HeadlessBusinessMan.png" alt="what?">
+   
+    
+
+    
+    
+    
+
+    <canvas id="mycanvas"  height="600" width="500" ></canvas>
+    
+
+
+</body>
+
+</html>
